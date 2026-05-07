@@ -1,5 +1,3 @@
-'use client'
-
 import type { StateKey } from '@/registry/types'
 
 const STATES: { key: StateKey; label: string }[] = [

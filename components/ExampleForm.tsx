@@ -1,18 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 
 interface ExampleFormProps {
-  isLoading: boolean
-  error?: string
-  submitted?: boolean
-  onSubmit: (data: { email: string }) => void
+  onSubmit: (data: { email: string }) => Promise<void>
 }
 
-export default function ExampleForm({ isLoading, error, submitted, onSubmit }: ExampleFormProps) {
+export default function ExampleForm({ onSubmit }: ExampleFormProps) {
   const [email, setEmail] = useState('')
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'error' | 'success'>('idle')
+  const [errorMessage, setErrorMessage] = useState<string>()
 
-  if (submitted) {
+  if (status === 'success') {
     return (
       <div className="w-80 rounded-2xl border border-green-200 bg-green-50 p-6 text-center">
         <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
@@ -26,24 +25,33 @@ export default function ExampleForm({ isLoading, error, submitted, onSubmit }: E
     )
   }
 
+  const isLoading = status === 'submitting'
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setStatus('submitting')
+    setErrorMessage(undefined)
+    try {
+      await onSubmit({ email })
+      setStatus('success')
+    } catch (err) {
+      setStatus('error')
+      setErrorMessage(err instanceof Error ? err.message : 'Something went wrong')
+    }
+  }
+
   return (
     <div className="w-80 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
       <h2 className="text-base font-semibold text-gray-900">Join the waitlist</h2>
       <p className="mt-1 text-sm text-gray-500">Enter your email to get early access.</p>
 
-      {error && (
+      {errorMessage && (
         <div className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
-          {error}
+          {errorMessage}
         </div>
       )}
 
-      <form
-        className="mt-4 flex flex-col gap-3"
-        onSubmit={(e) => {
-          e.preventDefault()
-          onSubmit({ email })
-        }}
-      >
+      <form className="mt-4 flex flex-col gap-3" onSubmit={handleSubmit}>
         <input
           type="email"
           value={email}
@@ -74,3 +82,4 @@ export default function ExampleForm({ isLoading, error, submitted, onSubmit }: E
     </div>
   )
 }
+

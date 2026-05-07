@@ -1,5 +1,3 @@
-'use client'
-
 import type { RegistryEntry, StateKey } from '@/registry/types'
 
 interface ComponentCanvasProps {
@@ -8,8 +6,7 @@ interface ComponentCanvasProps {
 }
 
 export default function ComponentCanvas({ entry, activeState }: ComponentCanvasProps) {
-  const { component: Component, states } = entry
-  const { props, description } = states[activeState]
+  const { render, description } = entry.states[activeState]
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -19,7 +16,7 @@ export default function ComponentCanvas({ entry, activeState }: ComponentCanvasP
         </div>
       )}
       <div className="flex flex-1 items-center justify-center bg-white p-10">
-        <Component {...props} />
+        {render()}
       </div>
     </div>
   )

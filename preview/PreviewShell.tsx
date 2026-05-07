@@ -1,15 +1,9 @@
-'use client'
-
 import { useState } from 'react'
 import type { RegistryEntry, StateKey } from '@/registry/types'
+import { registry } from './registry'
 import StateBar from './StateBar'
 import ComponentCanvas from './ComponentCanvas'
 
-interface PreviewShellProps {
-  registry: RegistryEntry[]
-}
-
-// Group entries by category
 function groupByCategory(entries: RegistryEntry[]): Record<string, RegistryEntry[]> {
   return entries.reduce<Record<string, RegistryEntry[]>>((acc, entry) => {
     const group = acc[entry.category] ?? []
@@ -17,7 +11,7 @@ function groupByCategory(entries: RegistryEntry[]): Record<string, RegistryEntry
   }, {})
 }
 
-export default function PreviewShell({ registry }: PreviewShellProps) {
+export default function PreviewShell() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [activeState, setActiveState] = useState<StateKey>('success')
 
@@ -65,7 +59,6 @@ export default function PreviewShell({ registry }: PreviewShellProps) {
 
       {/* Main area */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top bar with component name + state switcher */}
         <div className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3">
           <span className="font-medium text-gray-800">{activeEntry.name}</span>
         </div>
