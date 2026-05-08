@@ -10,5 +10,6 @@ export interface ComponentState {
 export interface RegistryEntry {
   name: string
   category: string
+  tags?: string[]
   states: Record<StateKey, ComponentState>
 }

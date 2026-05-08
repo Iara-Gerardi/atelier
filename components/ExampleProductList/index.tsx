@@ -3,59 +3,10 @@
 import { useState, useEffect } from 'react'
 import { getProducts } from '@/actions/product'
 import { GetProductsError, type Product } from '@/actions/product.types'
+import { ProductCard } from './components/ProductCard'
+import { Pagination } from './components/Pagination'
 
 const PAGE_SIZE = 3
-
-// ─── ProductCard ──────────────────────────────────────────────────────────────
-
-function ProductCard({ product }: { product: Product }) {
-  return (
-    <div className="unit flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
-      <span className="unit text-sm font-medium text-gray-900">{product.name}</span>
-      <span className="unit rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">
-        ${product.price.toFixed(2)}
-      </span>
-    </div>
-  )
-}
-
-// ─── Pagination ───────────────────────────────────────────────────────────────
-
-function Pagination({
-  page,
-  totalPages,
-  onPrev,
-  onNext,
-}: {
-  page: number
-  totalPages: number
-  onPrev: () => void
-  onNext: () => void
-}) {
-  return (
-    <div className="flex items-center justify-between pt-2">
-      <button
-        onClick={onPrev}
-        disabled={page === 1}
-        className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        ← Prev
-      </button>
-      <span className="text-xs text-gray-400">
-        {page} / {totalPages}
-      </span>
-      <button
-        onClick={onNext}
-        disabled={page === totalPages}
-        className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        Next →
-      </button>
-    </div>
-  )
-}
-
-// ─── ExampleProductList ───────────────────────────────────────────────────────
 
 export default function ExampleProductList() {
   const [data, setData] = useState<Product[] | null>(null)
