@@ -6,7 +6,8 @@ interface ComponentCanvasProps {
 }
 
 export default function ComponentCanvas({ entry, activeState }: ComponentCanvasProps) {
-  const { render, description } = entry.states[activeState]
+  const state = entry.states[activeState] ?? entry.states[Object.keys(entry.states)[0]]
+  const { render, description } = state
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">

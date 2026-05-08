@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-export type StateKey = 'loading' | 'error' | 'success'
+export type StateKey = string
 
 export interface ComponentState {
   render: () => ReactNode

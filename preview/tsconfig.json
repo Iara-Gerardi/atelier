@@ -15,6 +15,10 @@
     "baseUrl": "..",
     "ignoreDeprecations": "6.0",
     "paths": {
+      "@/actions/user": ["./preview/mocks/actions/user.ts"],
+      "@/actions/product": ["./preview/mocks/actions/product.ts"],
+      "@/hooks/useRelatedBlocks": ["./preview/mocks/hooks/useRelatedBlocks.ts"],
+      "../hooks/useRelatedBlocks": ["./preview/mocks/hooks/useRelatedBlocks.ts"],
       "@/*": ["./*"]
     }
   },

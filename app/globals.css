@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+@utility loading-item {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  background-color: var(--color-gray-200);
+  color: transparent;
+  border-radius: var(--radius-sm);
+  user-select: none;
+  pointer-events: none;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }

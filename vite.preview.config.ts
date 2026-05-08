@@ -13,6 +13,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@/actions/user': path.resolve(__dirname, 'preview/mocks/actions/user.ts'),
+      '@/actions/product': path.resolve(__dirname, 'preview/mocks/actions/product.ts'),
+      '@/hooks/useRelatedBlocks': path.resolve(__dirname, 'preview/mocks/hooks/useRelatedBlocks.ts'),
+      '../hooks/useRelatedBlocks': path.resolve(__dirname, 'preview/mocks/hooks/useRelatedBlocks.ts'),
       '@': path.resolve(__dirname, '.'),
     },
   },

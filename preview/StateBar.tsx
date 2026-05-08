@@ -1,20 +1,19 @@
 import type { StateKey } from '@/registry/types'
 
-const STATES: { key: StateKey; label: string }[] = [
-  { key: 'loading', label: 'Loading' },
-  { key: 'error', label: 'Error' },
-  { key: 'success', label: 'Success' },
-]
+function toLabel(key: string): string {
+  return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
 
 interface StateBarProps {
+  states: StateKey[]
   activeState: StateKey
   onChange: (state: StateKey) => void
 }
 
-export default function StateBar({ activeState, onChange }: StateBarProps) {
+export default function StateBar({ states, activeState, onChange }: StateBarProps) {
   return (
     <div className="flex items-center gap-1 px-4 py-2 border-b border-gray-200 bg-white">
-      {STATES.map(({ key, label }) => (
+      {states.map((key) => (
         <button
           key={key}
           onClick={() => onChange(key)}
@@ -24,7 +23,7 @@ export default function StateBar({ activeState, onChange }: StateBarProps) {
               : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
           }`}
         >
-          {label}
+          {toLabel(key)}
         </button>
       ))}
     </div>

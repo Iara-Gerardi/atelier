@@ -13,9 +13,10 @@ function groupByCategory(entries: RegistryEntry[]): Record<string, RegistryEntry
 
 export default function PreviewShell() {
   const [activeIndex, setActiveIndex] = useState(0)
-  const [activeState, setActiveState] = useState<StateKey>('success')
+  const [activeState, setActiveState] = useState<StateKey>(() => Object.keys(registry[0].states)[0])
 
   const activeEntry = registry[activeIndex]
+  const availableStates = Object.keys(activeEntry.states)
   const groups = groupByCategory(registry)
 
   return (
@@ -41,7 +42,7 @@ export default function PreviewShell() {
                   key={entry.name}
                   onClick={() => {
                     setActiveIndex(idx)
-                    setActiveState('success')
+                    setActiveState(Object.keys(registry[idx].states)[0])
                   }}
                   className={`w-full px-4 py-2 text-left text-sm transition-colors ${
                     isActive
@@ -62,7 +63,7 @@ export default function PreviewShell() {
         <div className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3">
           <span className="font-medium text-gray-800">{activeEntry.name}</span>
         </div>
-        <StateBar activeState={activeState} onChange={setActiveState} />
+        <StateBar states={availableStates} activeState={activeState} onChange={setActiveState} />
         <ComponentCanvas entry={activeEntry} activeState={activeState} />
       </div>
     </div>
