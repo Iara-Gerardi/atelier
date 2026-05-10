@@ -1,25 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-
-export interface RelatedBlock {
-  id: string | number
-  [key: string]: unknown
-}
-
-export type RelatedBlocksStatus =
-  | 'idle'
-  | 'loading'
-  | 'empty'
-  | 'error'
-  | 'rate_limited'
-  | 'success'
-
-export interface UseRelatedBlocksResult {
-  blocks: RelatedBlock[]
-  status: RelatedBlocksStatus
-  fromCache: boolean
-  generatedAt: Date | null
-  refresh: () => void
-}
+export type { RelatedBlock, RelatedBlocksStatus, UseRelatedBlocksResult } from './useRelatedBlocks.types'
+import type { RelatedBlock, RelatedBlocksStatus, UseRelatedBlocksResult } from './useRelatedBlocks.types'
 
 export function useRelatedBlocks(
   canvasId: string,

@@ -18,7 +18,8 @@
       "@/actions/user": ["./preview/mocks/actions/user.ts"],
       "@/actions/product": ["./preview/mocks/actions/product.ts"],
       "@/hooks/useRelatedBlocks": ["./preview/mocks/hooks/useRelatedBlocks.ts"],
-      "../hooks/useRelatedBlocks": ["./preview/mocks/hooks/useRelatedBlocks.ts"],
+      "@/hooks/useArenaSearch": ["./preview/mocks/hooks/useArenaSearch.ts"],
+      "@/hooks/useRateLimit": ["./preview/mocks/hooks/useRateLimit.ts"],
       "@/*": ["./*"]
     }
   },
