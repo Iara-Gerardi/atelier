@@ -17,7 +17,7 @@ function buildMockAliases(category: 'hooks' | 'actions') {
     .map(f => {
       const name = f.replace(/\.tsx?$/, '')
       return {
-        find: new RegExp(`/${category}/${name}$`),
+        find: new RegExp(`^.*/${category}/${name}$`),
         replacement: path.resolve(dir, f),
       }
     })
