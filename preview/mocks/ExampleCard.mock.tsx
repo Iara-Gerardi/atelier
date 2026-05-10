@@ -1,7 +1,13 @@
 import ExampleCard from '@/components/ExampleCard'
 import { setGetUserProfile } from '@/actions/user'
 import { GetUserProfileError } from '@/actions/user.types'
-import type { StateKey, ComponentState } from '@/registry/types'
+import type { StateKey, ComponentState, MockMeta } from '@/registry/types'
+
+export const meta: MockMeta = {
+  name: 'ExampleCard',
+  category: 'Data Display',
+  tags: ['user', 'profile'],
+}
 
 function fulfilled<T>(value: T): Promise<T> {
   const p = Promise.resolve(value) as Promise<T> & { status: string; value: T }
@@ -12,7 +18,7 @@ function fulfilled<T>(value: T): Promise<T> {
 
 function rejected<T>(reason: unknown): Promise<T> {
   const p = Promise.reject(reason) as Promise<T> & { status: string; reason: unknown }
-  p.catch(() => {})
+  p.catch(() => { })
   p.status = 'rejected'
   p.reason = reason
   return p
@@ -22,7 +28,7 @@ const states: Record<StateKey, ComponentState> = {
   loading: {
     description: 'Skeleton placeholder while the user profile is fetching',
     render: () => {
-      setGetUserProfile(() => new Promise(() => {}))
+      setGetUserProfile(() => new Promise(() => { }))
       return <ExampleCard key="loading" />
     },
   },

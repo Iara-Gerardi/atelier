@@ -7,9 +7,12 @@ export interface ComponentState {
   description?: string
 }
 
-export interface RegistryEntry {
+export interface MockMeta {
   name: string
   category: string
   tags?: string[]
+}
+
+export interface RegistryEntry extends MockMeta {
   states: Record<StateKey, ComponentState>
 }

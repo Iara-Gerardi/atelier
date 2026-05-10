@@ -23,8 +23,39 @@ function buildMockAliases(category: 'hooks' | 'actions') {
     })
 }
 
+/**
+ * Scans preview/mocks/*.mock.tsx and builds a virtual module `virtual:preview-registry`
+ * that assembles the registry array from each file's default export (states) and
+ * named `meta` export (name/category/tags). Adding a new mock file is all that's required.
+ */
+function buildRegistryPlugin() {
+  const VIRTUAL_ID = 'virtual:preview-registry'
+  const RESOLVED_ID = '\0virtual:preview-registry'
+  const mocksDir = path.resolve(__dirname, 'preview/mocks')
+
+  return {
+    name: 'preview-registry',
+    resolveId(id: string) {
+      if (id === VIRTUAL_ID) return RESOLVED_ID
+    },
+    load(id: string) {
+      if (id !== RESOLVED_ID) return
+
+      const files = readdirSync(mocksDir).filter(f => f.endsWith('.mock.tsx') || f.endsWith('.mock.ts'))
+
+      const imports = files
+        .map((f, i) => `import states${i}, { meta as meta${i} } from '${path.resolve(mocksDir, f).replace(/\\/g, '/')}'`)
+        .join('\n')
+
+      const entries = files.map((_, i) => `{ ...meta${i}, states: states${i} }`).join(',\n  ')
+
+      return `${imports}\nexport const registry = [\n  ${entries},\n]`
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [buildRegistryPlugin(), react()],
   css: {
     postcss: {
       plugins: [tailwindcss],

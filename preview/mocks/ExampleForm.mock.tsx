@@ -1,6 +1,12 @@
 import { useEffect, useRef } from 'react'
 import ExampleForm from '@/components/ExampleForm'
-import type { StateKey, ComponentState } from '@/registry/types'
+import type { StateKey, ComponentState, MockMeta } from '@/registry/types'
+
+export const meta: MockMeta = {
+  name: 'ExampleForm',
+  category: 'Forms',
+  tags: ['user', 'waitlist'],
+}
 
 type SubmitHandler = (data: { email: string }) => Promise<void>
 
@@ -30,7 +36,7 @@ const states: Record<StateKey, ComponentState> = {
   loading: {
     description: 'Form locked while the request is in-flight',
     render: () => (
-      <AutoSubmitForm key="loading" onSubmit={() => new Promise(() => {})} />
+      <AutoSubmitForm key="loading" onSubmit={() => new Promise(() => { })} />
     ),
   },
   error: {

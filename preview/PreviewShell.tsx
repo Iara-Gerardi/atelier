@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { RegistryEntry, StateKey } from '@/registry/types'
-import { registry } from './registry'
+import { registry } from 'virtual:preview-registry'
 import StateBar from './StateBar'
 import ComponentCanvas from './ComponentCanvas'
 import CanvasGrid from './CanvasGrid'
@@ -49,7 +49,7 @@ export default function PreviewShell() {
 
   const filteredEntries = registry.filter((entry) => {
     const categoryMatch = activeCategories.size === 0 || activeCategories.has(entry.category)
-    const tagMatch = activeTags.size === 0 || (entry.tags ?? []).some((t) => activeTags.has(t))
+    const tagMatch = activeTags.size === 0 || (entry.tags ?? []).some((t: string) => activeTags.has(t))
     return categoryMatch && tagMatch
   })
 
@@ -95,11 +95,10 @@ export default function PreviewShell() {
                     setActiveState(Object.keys(registry[idx].states)[0])
                     setMode('single')
                   }}
-                  className={`w-full px-4 py-2 text-left text-sm transition-colors ${
-                    isActive
+                  className={`w-full px-4 py-2 text-left text-sm transition-colors ${isActive
                       ? 'bg-gray-800 font-medium text-white'
                       : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
-                  }`}
+                    }`}
                 >
                   {entry.name}
                 </button>
@@ -139,11 +138,10 @@ export default function PreviewShell() {
                 <button
                   key={cat}
                   onClick={() => toggleCategory(cat)}
-                  className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${
-                    activeCategories.has(cat)
+                  className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${activeCategories.has(cat)
                       ? 'bg-indigo-600 text-white'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
+                    }`}
                 >
                   {cat}
                 </button>
@@ -155,11 +153,10 @@ export default function PreviewShell() {
                     <button
                       key={tag}
                       onClick={() => toggleTag(tag)}
-                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${
-                        activeTags.has(tag)
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${activeTags.has(tag)
                           ? 'bg-indigo-600 text-white'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
+                        }`}
                     >
                       {tag}
                     </button>

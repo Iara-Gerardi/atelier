@@ -1,12 +1,12 @@
-import ExampleProductList from '@/components/ExampleProductList'
+import HomePage from '@/components/HomePage'
 import { setGetProducts } from '@/actions/product'
 import { GetProductsError } from '@/actions/product.types'
 import type { StateKey, ComponentState, MockMeta } from '@/registry/types'
 
 export const meta: MockMeta = {
-  name: 'ExampleProductList',
-  category: 'Commerce',
-  tags: ['checkout', 'products'],
+  name: 'HomePage',
+  category: 'Pages',
+  tags: ['home', 'products'],
 }
 
 const PRODUCTS = [
@@ -26,25 +26,25 @@ const states: Record<StateKey, ComponentState> = {
     description: 'Cards skeleton-ize while products are fetching',
     render: () => {
       setGetProducts(() => new Promise(() => { }))
-      return <ExampleProductList key="loading" />
+      return <HomePage key="loading" />
     },
   },
   error: {
-    description: 'Server error returned from the products endpoint',
+    description: 'Product fetch failed — error card shown',
     render: () => {
       setGetProducts(() =>
         Promise.reject(
           new GetProductsError('Could not load products — service unavailable (503).', '503'),
         ),
       )
-      return <ExampleProductList key="error" />
+      return <HomePage key="error" />
     },
   },
   success: {
-    description: 'All 9 products loaded, paginated 3 per page',
+    description: 'All 9 products loaded, 6 per page, paginated',
     render: () => {
       setGetProducts(() => Promise.resolve(PRODUCTS))
-      return <ExampleProductList key="success" />
+      return <HomePage key="success" />
     },
   },
 }

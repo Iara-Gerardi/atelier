@@ -8,10 +8,10 @@ let _impl: UseArenaSearchFn = () => ({
   blocks: [],
   channels: [],
   isLoading: false,
-  loadMore: () => {},
+  loadMore: () => { },
   hasMore: false,
   error: null,
-  retry: () => {},
+  retry: () => { },
 })
 
 export function setUseArenaSearch(impl: UseArenaSearchFn): void {

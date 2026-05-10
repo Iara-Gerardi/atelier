@@ -9,7 +9,7 @@ let _impl: UseRelatedBlocksFn = () => ({
   status: 'idle',
   fromCache: false,
   generatedAt: null,
-  refresh: () => {},
+  refresh: () => { },
 })
 
 export function setUseRelatedBlocks(impl: UseRelatedBlocksFn): void {

@@ -1,8 +1,18 @@
 # Atelier
 
-A dev-only component preview tool. Browse registered React components in isolation and cycle through their **Loading**, **Error**, and **Success** states — no backend, no mock server.
+A dev-only component preview tool designed for AI driven development. Browse registered React components in isolation and cycle through their **Loading**, **Error**, and **Success** states — no backend, no mock server.
 
 Components are written exactly as they would ship: server actions, `use(promise)` + Suspense, real error boundaries. Each state is a render function that intercepts the server action import via `vi.mock`, so the component renders authentically without any artificial props.
+
+## Features
+
+- **Isolated component preview** — browse any registered component without running the full Next.js app
+- **State cycling** — switch between Loading, Error, and Success states with one click; each state is a self-contained render function
+- **Authentic rendering** — components use real imports; server actions are intercepted at the module level via `vi.mock`, not replaced with fake props
+- **Auto-registered mocks** — drop a `*.mock.tsx` file into `preview/mocks/` and it appears in the sidebar automatically; no manual registration
+- **Hot reload** — edits to components or mocks reflect instantly in the Chromium preview window
+- **Suspense + ErrorBoundary aware** — async states (loading, error) are driven by real promise resolution, not simulated delays
+- **Bug tracking** — fixes are documented automatically in `qa/pending/` by the agent and can be verified by the dedicated QA agent
 
 ## Stack
 
