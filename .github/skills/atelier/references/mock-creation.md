@@ -1,13 +1,13 @@
-# Mock Creation Reference
+# Frame File Creation Reference
 
-## Mock file anatomy
+## Frame file anatomy
 
-Every component in `components/` must have exactly one mock file at `preview/mocks/<ComponentName>.mock.tsx`.
+Every component in `components/` must have exactly one frame file at `.atelier/mocks/<ComponentName>.frame.tsx`.
 
 ```tsx
-// preview/mocks/MyComponent.mock.tsx
+// .atelier/mocks/MyComponent.frame.tsx
 import MyComponent from '@/components/MyComponent'
-import type { StateKey, ComponentState, MockMeta } from '@/registry/types'
+import type { StateKey, ComponentState, MockMeta } from '@/.atelier/registry/types'
 
 export const meta: MockMeta = {
   name: 'MyComponent',
@@ -39,13 +39,14 @@ export default states
 
 ## What qualifies as a distinct state?
 
-A state is a meaningfully different visual or interactive configuration of the component. Common state categories:
+A state is any meaningfully different visual or interactive configuration of the component. **Enumerate all states upfront** — the goal is that every visual variant a real user could encounter is represented as a named state in the frame file.
 
 | Category | Examples |
 |----------|---------|
 | **Async phase** | `loading` (skeleton), `error`, `success` |
+| **Auth / role** | `guest`, `logged_in`, `admin`, `banned` |
 | **Data shape** | `empty` (no results), `single_item`, `many_items`, `paginated` |
-| **User interaction variant** | `idle`, `focused`, `expanded`, `collapsed` |
+| **User interaction** | `idle`, `focused`, `expanded`, `collapsed`, `submitting` |
 | **Permission / limit** | `rate_limited`, `unauthorized`, `read_only` |
 | **Feature flag** | `with_feature_x`, `without_feature_x` |
 | **Presentation variant** | `primary`, `secondary`, `ghost`, `disabled` (for UI primitives) |
@@ -54,6 +55,26 @@ Rules of thumb:
 - If a state triggers a visually distinct render, it deserves its own state key.
 - If the only difference is a prop value that doesn't change the layout, a single state with a note is fine.
 - Don't mock unreachable states that the component's own logic prevents.
+- **When in doubt, add the state.** A frame file with 7 states is better than one that hides half the component's real behavior.
+
+**Auth/role states** deserve special attention. If a component renders differently for a guest versus a logged-in user, those are two states — not two components. Model them explicitly:
+
+```tsx
+const states: Record<StateKey, ComponentState> = {
+  guest: {
+    description: 'Unauthenticated visitor — shows login prompt',
+    render: () => { setUseSession(() => ({ user: null })); return <NavBar key="guest" /> },
+  },
+  logged_in: {
+    description: 'Authenticated user — shows avatar and nav links',
+    render: () => { setUseSession(() => ({ user: { name: 'Ada', role: 'user' } })); return <NavBar key="logged_in" /> },
+  },
+  admin: {
+    description: 'Admin user — shows extra controls',
+    render: () => { setUseSession(() => ({ user: { name: 'Ada', role: 'admin' } })); return <NavBar key="admin" /> },
+  },
+}
+```
 
 ---
 
@@ -62,7 +83,7 @@ Rules of thumb:
 If a component imports a server action (e.g. `import { getProducts } from '@/actions/product'`), create a mock interceptor. Action types live in a separate `actions/myAction.types.ts` — import from there, **not** from the action file itself (which would be circular):
 
 ```ts
-// preview/mocks/actions/myAction.ts
+// .atelier/mocks/actions/myAction.ts
 import type { MyResult } from '@/actions/myAction.types'
 
 type Fn = () => Promise<MyResult>
@@ -71,7 +92,7 @@ export function setMyAction(impl: Fn): void { _impl = impl }
 export async function myAction(): Promise<MyResult> { return _impl() }
 ```
 
-Drop the file in `preview/mocks/actions/` — the Vite config auto-scans that folder and creates the alias automatically. **No Vite config change needed.**
+Drop the file in `.atelier/mocks/actions/` — the Vite config auto-scans that folder and creates the alias automatically. **No Vite config change needed.**
 
 Use the setter inside each state's `render` function:
 
@@ -81,6 +102,24 @@ render: () => {
   return <MyComponent key="success" />
 },
 ```
+
+---
+
+## When do you need to mock a hook?
+
+Hook mocking works via Vite module aliases — the same mechanism as action mocking. It is **not always needed**. Use this decision tree:
+
+| Hook characteristic | Action |
+|---------------------|--------|
+| Pure client-side library (XState, `useState` wrapper, `useLocalStorage`) | **No mock needed** — runs as-is in Vite |
+| Custom hook that only reads client state or browser APIs | **No mock needed** |
+| Custom hook that calls a server action internally | **Mock required** — Vite cannot execute server actions |
+| Custom hook that calls an external API (`fetch`, GraphQL) | **Mock recommended** — avoid real network calls in preview |
+| Custom hook you want to pin to a specific value per state | **Mock useful** — lets you control exactly what the component sees |
+
+If a hook falls into "no mock needed", import it normally in the frame file. The real implementation runs in the Vite preview exactly as it would in the browser.
+
+If you do need a mock, follow the interceptor pattern below.
 
 ---
 
@@ -103,7 +142,7 @@ import type { UseMyHookResult } from './useMyHook.types'
 export function useMyHook(): UseMyHookResult { /* real impl */ }
 ```
 
-**3. `preview/mocks/hooks/useMyHook.ts`** — mock interceptor, imports from `.types.ts` only:
+**3. `.atelier/mocks/hooks/useMyHook.ts`** — mock interceptor, imports from `.types.ts` only:
 
 ```ts
 import type { UseMyHookResult } from '../../../hooks/useMyHook.types'
@@ -116,12 +155,12 @@ export function setUseMyHook(impl: UseMyHookFn): void { _impl = impl }
 export function useMyHook(_arg: unknown): UseMyHookResult { return _impl() }
 ```
 
-Drop in `preview/mocks/hooks/` — auto-aliased by Vite. **No Vite config change needed.**
+Drop in `.atelier/mocks/hooks/` — auto-aliased by Vite. **No Vite config change needed.**
 
-Add a path to `preview/tsconfig.json` for IDE type-checking:
+Add a path to `.atelier/tsconfig.json` for IDE type-checking:
 
 ```json
-"@/hooks/useMyHook": ["./preview/mocks/hooks/useMyHook.ts"]
+"@/hooks/useMyHook": ["./.atelier/mocks/hooks/useMyHook.ts"]
 ```
 
 > **Why a separate types file?** The mock interceptor IS the aliased module. If it imported from the real hook file, Vite would redirect that import back to the mock itself — a circular dependency. Importing from a `.types.ts` file (which is never aliased) avoids this.

@@ -1,4 +1,4 @@
-import type { RegistryEntry, StateKey } from '@/registry/types'
+import type { RegistryEntry, StateKey } from '@/.atelier/registry/types'
 
 interface ComponentCanvasProps {
   entry: RegistryEntry

@@ -1,7 +1,7 @@
 import ExampleSearchTab from '@/components/ExampleSearchTab'
 import { setUseArenaSearch } from '@/hooks/useArenaSearch'
 import { setUseRateLimit } from '@/hooks/useRateLimit'
-import type { StateKey, ComponentState, MockMeta } from '@/registry/types'
+import type { StateKey, ComponentState, MockMeta } from '@/.atelier/registry/types'
 
 export const meta: MockMeta = {
   name: 'ExampleSearchTab',

@@ -1,7 +1,7 @@
 import HomePage from '@/components/HomePage'
 import { setGetProducts } from '@/actions/product'
 import { GetProductsError } from '@/actions/product.types'
-import type { StateKey, ComponentState, MockMeta } from '@/registry/types'
+import type { StateKey, ComponentState, MockMeta } from '@/.atelier/registry/types'
 
 export const meta: MockMeta = {
   name: 'HomePage',

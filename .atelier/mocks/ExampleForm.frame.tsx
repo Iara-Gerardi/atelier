@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import ExampleForm from '@/components/ExampleForm'
-import type { StateKey, ComponentState, MockMeta } from '@/registry/types'
+import type { StateKey, ComponentState, MockMeta } from '@/.atelier/registry/types'
 
 export const meta: MockMeta = {
   name: 'ExampleForm',

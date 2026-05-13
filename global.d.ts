@@ -3,7 +3,3 @@ declare module '*.css' {
   export default content
 }
 
-declare module 'virtual:preview-registry' {
-  import type { RegistryEntry } from './registry/types'
-  export const registry: RegistryEntry[]
-}

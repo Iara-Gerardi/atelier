@@ -14,12 +14,13 @@
     "jsx": "react-jsx",
     "baseUrl": "..",
     "ignoreDeprecations": "6.0",
+    "types": ["vite/client"],
     "paths": {
-      "@/actions/user": ["./preview/mocks/actions/user.ts"],
-      "@/actions/product": ["./preview/mocks/actions/product.ts"],
-      "@/hooks/useRelatedBlocks": ["./preview/mocks/hooks/useRelatedBlocks.ts"],
-      "@/hooks/useArenaSearch": ["./preview/mocks/hooks/useArenaSearch.ts"],
-      "@/hooks/useRateLimit": ["./preview/mocks/hooks/useRateLimit.ts"],
+      "@/actions/user": ["./.atelier/mocks/actions/user.ts"],
+      "@/actions/product": ["./.atelier/mocks/actions/product.ts"],
+      "@/hooks/useRelatedBlocks": ["./.atelier/mocks/hooks/useRelatedBlocks.ts"],
+      "@/hooks/useArenaSearch": ["./.atelier/mocks/hooks/useArenaSearch.ts"],
+      "@/hooks/useRateLimit": ["./.atelier/mocks/hooks/useRateLimit.ts"],
       "@/*": ["./*"]
     }
   },
@@ -27,7 +28,7 @@
     "./**/*.ts",
     "./**/*.tsx",
     "../global.d.ts",
-    "../registry/types.ts",
+    "./.atelier/registry/types.ts",
     "../actions/**/*.ts",
     "../components/**/*.tsx"
   ]

@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import type { RegistryEntry, StateKey } from '@/registry/types'
-import { registry } from 'virtual:preview-registry'
+import type { RegistryEntry, StateKey } from '@/.atelier/registry/types'
+import { registry } from '@/.atelier/registry'
 import StateBar from './StateBar'
 import ComponentCanvas from './ComponentCanvas'
 import CanvasGrid from './CanvasGrid'

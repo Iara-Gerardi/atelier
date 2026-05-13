@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "preview": "vite --config vite.preview.config.ts"
+    "preview": "vite --config vite.atelier.config.ts"
   },
   "dependencies": {
     "next": "15.5.15",

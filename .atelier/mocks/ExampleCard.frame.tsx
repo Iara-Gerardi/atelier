@@ -1,7 +1,7 @@
 import ExampleCard from '@/components/ExampleCard'
 import { setGetUserProfile } from '@/actions/user'
 import { GetUserProfileError } from '@/actions/user.types'
-import type { StateKey, ComponentState, MockMeta } from '@/registry/types'
+import type { StateKey, ComponentState, MockMeta } from '@/.atelier/registry/types'
 
 export const meta: MockMeta = {
   name: 'ExampleCard',

@@ -1,4 +1,4 @@
-import type { RegistryEntry } from '@/registry/types'
+import type { RegistryEntry } from '@/.atelier/registry/types'
 
 interface CanvasGridProps {
   entries: RegistryEntry[]

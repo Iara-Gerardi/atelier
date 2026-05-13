@@ -2,7 +2,7 @@
 
 ## What Atelier is
 
-Atelier is a component preview workbench. Every component in `components/` must have a corresponding mock file in `preview/mocks/`. The registry is assembled automatically — no manual registration is needed.
+Atelier is a component preview workbench. Every component in `components/` must have a corresponding frame file (`*.frame.tsx`) in `.atelier/mocks/`. The registry is assembled automatically — no manual registration is needed.
 
 **For detailed patterns, load the `atelier` skill** (`.github/skills/atelier/SKILL.md`).
 
@@ -10,9 +10,9 @@ Atelier is a component preview workbench. Every component in `components/` must 
 
 ## Registry mechanism
 
-`vite.preview.config.ts` scans `preview/mocks/*.mock.tsx` at dev-server start and builds a `virtual:preview-registry` module on the fly. Each mock file is the single source of truth for both its visual states and its registry metadata.
+`.atelier/registry/index.ts` uses `import.meta.glob` to auto-discover all `*.frame.tsx` files at Vite startup. Each frame file is the single source of truth for both its visual states and its registry metadata.
 
-The type contract lives in `registry/types.ts`:
+The type contract lives in `.atelier/registry/types.ts`:
 
 ```ts
 export type StateKey = string
@@ -46,7 +46,7 @@ For QA test runs, invoke the `qa-agent` (`.github/agents/qa-agent.agent.md`).
 ## Checklist for any new component
 
 - [ ] Component created in `components/` — follow folder/nesting rules in the skill's `app-architecture.md`
-- [ ] Mock file created at `preview/mocks/<ComponentName>.mock.tsx` with `meta` export + default states
-- [ ] If component uses a server action: mock interceptor created in `preview/mocks/actions/`
-- [ ] If component uses a hook: mock interceptor created in `preview/mocks/hooks/` + path added to `preview/tsconfig.json`
+- [ ] Frame file created at `.atelier/mocks/<ComponentName>.frame.tsx` with `meta` export + default states
+- [ ] If component uses a server action: mock interceptor created in `.atelier/mocks/actions/`
+- [ ] If component uses a hook: mock interceptor created in `.atelier/mocks/hooks/` + path added to `.atelier/tsconfig.json`
 - [ ] States cover: loading, error, success, and any meaningful interaction variants

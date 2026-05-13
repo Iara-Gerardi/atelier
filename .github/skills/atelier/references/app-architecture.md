@@ -22,19 +22,22 @@ components/
 
 actions/
   myAction.ts                  ← Server action implementation
-  myAction.types.ts            ← Types only (imported by both action and mock interceptor)
+  myAction.types.ts            ← Types only (imported by both action and frame interceptor)
 
 hooks/
   useMyHook.ts                 ← Real implementation, re-exports from .types.ts
   useMyHook.types.ts           ← Types only
 
-preview/
+.atelier/
   mocks/
-    MyComponent.mock.tsx       ← Flat; one file per component
+    MyComponent.frame.tsx      ← Flat; one file per component
     actions/
       myAction.ts              ← Mock interceptor (auto-aliased by Vite)
     hooks/
       useMyHook.ts             ← Mock interceptor (auto-aliased by Vite)
+  registry/
+    index.ts                   ← Auto-assembles registry via import.meta.glob
+    types.ts                   ← StateKey, ComponentState, MockMeta, RegistryEntry
 ```
 
 ---
@@ -58,7 +61,7 @@ preview/
 - Component files: `PascalCase.tsx`
 - Hook files: `useCamelCase.ts` / `useCamelCase.types.ts`
 - Action files: `camelCase.ts` / `camelCase.types.ts`
-- Mock files: `<ComponentName>.mock.tsx` (flat in `preview/mocks/`)
+- Frame files: `<ComponentName>.frame.tsx` (flat in `.atelier/mocks/`)
 - Index files: always `index.tsx` for folder-based components
 
 ---

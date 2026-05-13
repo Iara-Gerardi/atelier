@@ -1,4 +1,4 @@
-import type { StateKey } from '@/registry/types'
+import type { StateKey } from '@/.atelier/registry/types'
 
 function toLabel(key: string): string {
   return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())

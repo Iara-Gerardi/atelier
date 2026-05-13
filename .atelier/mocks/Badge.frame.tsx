@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/Badge'
-import type { StateKey, ComponentState, MockMeta } from '@/registry/types'
+import type { StateKey, ComponentState, MockMeta } from '@/.atelier/registry/types'
 
 export const meta: MockMeta = {
   name: 'Badge',
