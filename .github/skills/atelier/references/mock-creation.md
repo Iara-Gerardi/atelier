@@ -29,11 +29,45 @@ const states: Record<StateKey, ComponentState> = {
     render: () => <MyComponent key="success" />,
   },
 }
+```
+
+> **Note:** The descriptions above are intentionally terse to keep the anatomy legible. See [Writing state descriptions](#writing-state-descriptions) below for the quality bar required in real frame files.
 
 export default states
 ```
 
 **Always pass a `key` prop** matching the state name on the root component element. This forces React to remount the component when the state changes, preventing stale state from bleeding between previews.
+
+---
+
+## Writing state descriptions
+
+The `description` field is the **source of truth** for any automated agent (MCP, QA, CI) inspecting the registry. It must be self-contained: an agent reading only the registry JSON must be able to understand what the state renders, what data drives it, and what mocks are active — **without reading any source code**.
+
+### Required content
+
+Every description must answer:
+
+1. **What does the user see?** Describe the visual output, not just the state name.
+2. **What mock values are active?** Name the hook or action mock and the key values it returns.
+3. **What fixture data shapes the render?** If mock data is inline, summarize it (e.g. "4 blocks, 2 channels").
+4. **Any interaction precondition?** If the state is only reached after a user action, say so.
+
+### Rules
+
+- Avoid synonyms of the key. `error: { description: 'Error state' }` adds zero information.
+- Be concrete about mock return values, not vague (`'returns error'` → `'returns { error: "Rate limited", isLoading: false }'`).
+- Quantify fixture data when it affects layout (`'1 item'` vs `'many items'` vs `'empty array'`).
+- One or two sentences is the target length — detailed but not verbose.
+
+### Before / after
+
+| ❌ Too terse | ✅ Self-contained |
+|---|---|
+| `'Error state'` | `'Search failed: useArenaSearch returns { error: "Rate limited", isLoading: false }. Shows inline error banner with retry CTA.'` |
+| `'No query — prompt to start searching'` | `'Idle: no query entered. useArenaSearch returns empty arrays, isLoading: false. Shows centered placeholder prompt.'` |
+| `'Fully loaded'` | `'Success: 4 blocks and 2 channels returned (MOCK_BLOCKS + MOCK_CHANNELS), hasMore: true. Pagination footer is visible.'` |
+| `'Skeleton while data is fetching'` | `'Loading: useArenaSearch returns isLoading: true, empty arrays. Renders skeleton rows in place of real content.'` |
 
 ---
 

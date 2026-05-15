@@ -1,9 +1,24 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { RegistryEntry, StateKey } from '@/.atelier/registry/types'
 import { registry } from '@/.atelier/registry'
 import StateBar from './StateBar'
 import ComponentCanvas from './ComponentCanvas'
 import CanvasGrid from './CanvasGrid'
+
+function resolveInitialIndex(): number {
+  const params = new URLSearchParams(window.location.search)
+  const story = params.get('story')
+  if (!story) return 0
+  const idx = registry.findIndex((e) => e.name === story)
+  return idx === -1 ? 0 : idx
+}
+
+function resolveInitialState(idx: number): StateKey {
+  const params = new URLSearchParams(window.location.search)
+  const state = params.get('state')
+  const keys = Object.keys(registry[idx].states)
+  return state && keys.includes(state) ? state : keys[0]
+}
 
 function groupByCategory(entries: RegistryEntry[]): Record<string, RegistryEntry[]> {
   return entries.reduce<Record<string, RegistryEntry[]>>((acc, entry) => {
@@ -36,9 +51,16 @@ function SingleIcon() {
 }
 
 export default function PreviewShell() {
-  const [activeIndex, setActiveIndex] = useState(0)
-  const [activeState, setActiveState] = useState<StateKey>(() => Object.keys(registry[0].states)[0])
+  const [activeIndex, setActiveIndex] = useState<number>(() => resolveInitialIndex())
+  const [activeState, setActiveState] = useState<StateKey>(() => resolveInitialState(resolveInitialIndex()))
   const [mode, setMode] = useState<'single' | 'canvas'>('single')
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    params.set('story', registry[activeIndex].name)
+    params.set('state', activeState)
+    window.history.replaceState(null, '', `?${params.toString()}`)
+  }, [activeIndex, activeState])
   const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set())
   const [activeTags, setActiveTags] = useState<Set<string>>(new Set())
 

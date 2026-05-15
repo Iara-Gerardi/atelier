@@ -7,6 +7,9 @@ tools:
   - replace_string_in_file
   - create_file
   - list_dir
+  - list_stories
+  - get_story_info
+  - navigate_to_story
 ---
 
 ## Identity

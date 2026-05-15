@@ -4,7 +4,7 @@ created: 2026-05-12
 fixed_in: components/ExampleCard.tsx
 trigger: Missing `shrink-0` on skeleton avatar div caused flex container to compress its width
 severity: low
-status: pending_verification
+status: verified
 ---
 
 ## What broke

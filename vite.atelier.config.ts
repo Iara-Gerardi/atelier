@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/postcss'
 import path from 'path'
 import { readdirSync } from 'fs'
+import type { Plugin } from 'vite'
+import type { RegistryEntry } from './.atelier/registry/types'
 
 /**
  * Auto-scan preview/mocks/{category}/ and build one regex alias per file.
@@ -23,8 +25,38 @@ function buildMockAliases(category: 'hooks' | 'actions') {
     })
 }
 
+function registryApiPlugin(): Plugin {
+  return {
+    name: 'atelier-registry-api',
+    configureServer(server) {
+      server.middlewares.use('/api/registry', async (_req, res) => {
+        try {
+          const mod = await server.ssrLoadModule('/.atelier/registry/index.ts')
+          const entries: RegistryEntry[] = mod.registry
+          const payload = entries.map((entry) => ({
+            name: entry.name,
+            category: entry.category,
+            tags: entry.tags ?? [],
+            states: Object.fromEntries(
+              Object.entries(entry.states).map(([key, state]) => [
+                key,
+                { description: state.description ?? null },
+              ])
+            ),
+          }))
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(payload))
+        } catch (err) {
+          res.statusCode = 500
+          res.end(JSON.stringify({ error: String(err) }))
+        }
+      })
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), registryApiPlugin()],
   css: {
     postcss: {
       plugins: [tailwindcss],
