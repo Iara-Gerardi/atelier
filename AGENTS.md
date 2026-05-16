@@ -6,6 +6,8 @@ Atelier is a component preview workbench. Every component in `components/` must 
 
 **For detailed patterns, load the `atelier` skill** (`.github/skills/atelier/SKILL.md`).
 
+> **Skip workflows:** If the user's message includes `--no-workflow`, skip all automatic skill loading and documentation steps for that request.
+
 ---
 
 ## Registry mechanism
@@ -32,6 +34,14 @@ export interface RegistryEntry extends MockMeta {
   states: Record<StateKey, ComponentState>
 }
 ```
+
+---
+
+## Feature documentation
+
+When a new feature is built or an existing feature's functional requirements / user flow changes, **load the `feature-analyst` skill** (`.github/skills/feature-analyst/SKILL.md`) before writing any feature docs. The skill instructs you to create or update the three documentation files in `features/<slug>/`.
+
+**Do not load this skill for:** bugfixes that do not alter user-facing behavior, style or refactor changes, or adding Atelier frame states for behavior that already existed.
 
 ---
 
