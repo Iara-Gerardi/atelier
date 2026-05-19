@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
+import { Button } from '@/components/ui/Button'
 
 interface ExampleFormProps {
   onSubmit: (data: { email: string }) => Promise<void>
@@ -61,11 +62,7 @@ export default function ExampleForm({ onSubmit }: ExampleFormProps) {
           disabled={isLoading}
           required
         />
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
-        >
+        <Button type="submit" disabled={isLoading} className="gap-2">
           {isLoading ? (
             <>
               <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -77,7 +74,7 @@ export default function ExampleForm({ onSubmit }: ExampleFormProps) {
           ) : (
             'Get early access'
           )}
-        </button>
+        </Button>
       </form>
     </div>
   )

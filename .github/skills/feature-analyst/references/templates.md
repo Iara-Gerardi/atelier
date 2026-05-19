@@ -34,6 +34,7 @@ tags: [<tag1>, <tag2>]
 ## Feature docs
 - [User flow](./flow.md)
 - [Frame references](./frames.md)
+- [Scene references](./scenes.md)
 ```
 
 ---
@@ -78,6 +79,8 @@ sequenceDiagram
 - Keep labels short (≤ 8 words); full explanation goes in the legend
 - Add `alt` / `opt` blocks for branching paths (error states, empty results, etc.) — number those arrows in the same sequence
 
+> `flow.md` captures **request/response over time** (User ↔ Frontend ↔ Backend). The screen-by-screen experience and its interactive branches are captured in [`scenes.md`](#scenesmd) and the scene files it points to — the two docs are complementary.
+
 ---
 
 ## `frames.md`
@@ -95,3 +98,23 @@ Frame files that provide Atelier visual coverage for this feature:
 - Paths are relative to the workspace root
 - Only include frames that are **directly** related to this feature's components or flows
 - If no frame exists yet, write `<!-- no frames yet -->` as a placeholder
+
+---
+
+## `scenes.md`
+
+```markdown
+# <Feature Name> — Scene References
+
+Atelier scene files that exercise this feature's user flow end-to-end:
+
+- `.atelier/scenes/<SceneName>.scene.tsx`
+```
+
+**Rules:**
+- One path per line, as a markdown list item
+- Paths are relative to the workspace root
+- Only include scenes whose `nodes[*].frame` references at least one frame in this feature's `frames.md`
+- If no scene exists yet, write `<!-- no scenes yet -->` as a placeholder
+- A scene may appear in multiple features' `scenes.md` files if it spans them — that's intentional, scenes are the cross-feature glue
+- Whenever this file gains or loses an entry, the `scene-coverage` skill (`.github/skills/scene-coverage/SKILL.md`) must be invoked on the affected scenes so `qa/pending/` stays in sync

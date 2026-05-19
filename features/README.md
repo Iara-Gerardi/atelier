@@ -12,6 +12,7 @@ features/
     index.md    — summary, status, file references
     flow.md     — mermaid user-flow diagram + numbered interaction legend
     frames.md   — list of Atelier frame files that cover this feature
+    scenes.md   — list of Atelier scene files that cover this feature
 ```
 
 One folder per feature. The slug is kebab-case and matches the feature's primary component name when possible (e.g. `example-search-tab`, `home-page`).
@@ -48,6 +49,14 @@ Each arrow in the diagram carries a number (`1`, `2`, `3`, …). A numbered lege
 ### `frames.md`
 
 A flat list of `.atelier/mocks/*.frame.tsx` paths that provide visual coverage for this feature. One path per line.
+
+### `scenes.md`
+
+A flat list of `.atelier/scenes/*.scene.tsx` paths that exercise this feature's user flow end-to-end. One path per line.
+
+Scenes are the canonical screen-level spec for user flows in this workspace. Where `flow.md` describes how the User, Frontend, and Backend exchange messages over time, `scenes.md` describes the discrete screens the user moves between and the mock buttons that drive those transitions. The two files are complementary, not redundant.
+
+Whenever this list changes, the `scene-coverage` skill (`.github/skills/scene-coverage/SKILL.md`) is invoked on the affected scenes so that derived qa cases under `qa/pending/` stay in sync.
 
 ---
 

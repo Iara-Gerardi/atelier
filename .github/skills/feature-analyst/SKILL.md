@@ -34,15 +34,18 @@ Do **not** activate for:
 
 3. **Load the templates** from [references/templates.md](./references/templates.md).
 
-4. **Write or update the three files** in `features/<slug>/`:
+4. **Write or update the four files** in `features/<slug>/`:
 
    | File | Action |
    |------|--------|
    | `index.md` | Create from template. List every source file (components, actions, hooks) that belongs to this feature. |
    | `flow.md` | Build the `sequenceDiagram` from the actual code path. Use `User`, `Frontend`, `Backend` as the only participants. Number every arrow. Write the legend. Add a "Third-party notes" section only if an external service is involved. |
    | `frames.md` | List every `.atelier/mocks/*.frame.tsx` path related to this feature. If none exist yet, use the placeholder comment. |
+   | `scenes.md` | List every `.atelier/scenes/*.scene.tsx` path whose `nodes[*].frame` references at least one frame listed in `frames.md`. If none exist yet, use the placeholder comment. |
 
-5. **Tell the user** which files were created or updated and where.
+5. **Invoke `scene-coverage` if `scenes.md` is non-empty.** For each scene path listed there, load and follow `.github/skills/scene-coverage/SKILL.md` to emit qa cases under `qa/pending/`. The skill is idempotent — running it again after a no-op scene change is safe and produces zero new files.
+
+6. **Tell the user** which files were created or updated and where, plus the count of qa cases emitted by `scene-coverage` (if invoked).
 
 ---
 
@@ -59,6 +62,8 @@ Do **not** activate for:
 ## Hard rules
 
 - Do **not** skip `flow.md` — the diagram is mandatory, not optional
+- Do **not** skip `scenes.md` — if the feature has no scenes yet, use the `<!-- no scenes yet -->` placeholder, do not omit the file
 - Do **not** fabricate file paths — only list source files you have verified exist
 - Do **not** modify `features/` for bugfixes or style-only changes
+- Do **not** write qa cases directly from this skill — always delegate to `scene-coverage`
 - The `features/README.md` is the convention document — do not modify it unless the convention itself changes

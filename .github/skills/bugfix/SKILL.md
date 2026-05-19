@@ -22,8 +22,12 @@ Activate this skill whenever the user:
 
 1. **Identify the fix** — which files changed, what was the root cause.
 2. **Apply the fix** in source code.
-3. **Immediately create** `qa/pending/<slug>.md` using the template below.
-4. **Tell the user** the fix is in place and that a QA case was written to `qa/pending/<slug>.md`.
+3. **Immediately create** `qa/pending/<slug>.md` using the template below. This case captures the *fix-specific* regression — keep it narrow and focused on the broken behavior.
+4. **Refresh scene coverage for the affected area.** For each component file changed by the fix:
+   - Find its frame name (from the `meta.name` in `.atelier/mocks/<ComponentName>.frame.tsx`).
+   - Search `features/*/scenes.md` for files that reference scenes containing that frame. Read each candidate `.atelier/scenes/*.scene.tsx` and confirm `nodes[*].frame` includes the frame name.
+   - For each matching scene, load and follow `.github/skills/scene-coverage/SKILL.md` to refresh `qa/pending/` cases for that scene. The skill is idempotent — existing cases will not be overwritten.
+5. **Tell the user** the fix is in place, that a fix-specific QA case was written to `qa/pending/<slug>.md`, and how many additional scene-coverage cases (if any) were emitted as a result of the refresh.
 
 ---
 
@@ -84,3 +88,4 @@ status: pending_verification
 - Do **not** skip this step if the fix is "obvious" or "small".
 - Do **not** write to `verified/` — only the qa-agent promotes cases.
 - Do **not** delete existing case files.
+- Do **not** write scene-derived cases by hand from this skill — always delegate the breadth coverage to `scene-coverage`. The fix-driven case stays narrow; scene-coverage owns the rest.

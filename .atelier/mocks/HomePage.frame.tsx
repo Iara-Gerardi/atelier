@@ -3,10 +3,11 @@ import { setGetProducts } from '@/actions/product'
 import { GetProductsError } from '@/actions/product.types'
 import type { StateKey, ComponentState, MockMeta } from '@/.atelier/registry/types'
 
-export const meta: MockMeta = {
+export const meta: MockMeta<'auth'> = {
   name: 'HomePage',
   category: 'Pages',
   tags: ['home', 'products'],
+  variants: ['auth'] as const,
 }
 
 const PRODUCTS = [
@@ -21,30 +22,45 @@ const PRODUCTS = [
   { id: '9', name: 'Laptop Stand', price: 59.95 },
 ]
 
-const states: Record<StateKey, ComponentState> = {
+type Auth = 'guest' | 'student' | 'professor' | 'admin'
+
+const states: Record<StateKey, ComponentState<'auth'>> = {
   loading: {
     description: 'Cards skeleton-ize while products are fetching',
-    render: () => {
+    render: ({ variants }) => {
       setGetProducts(() => new Promise(() => { }))
-      return <HomePage key="loading" />
+      return (
+        <div key={`loading-${variants.auth}`}>
+        
+          <HomePage />
+        </div>
+      )
     },
   },
   error: {
     description: 'Product fetch failed — error card shown',
-    render: () => {
+    render: ({ variants }) => {
       setGetProducts(() =>
         Promise.reject(
           new GetProductsError('Could not load products — service unavailable (503).', '503'),
         ),
       )
-      return <HomePage key="error" />
+      return (
+        <div key={`error-${variants.auth}`}>
+          <HomePage />
+        </div>
+      )
     },
   },
   success: {
     description: 'All 9 products loaded, 6 per page, paginated',
-    render: () => {
+    render: ({ variants }) => {
       setGetProducts(() => Promise.resolve(PRODUCTS))
-      return <HomePage key="success" />
+      return (
+        <div key={`success-${variants.auth}`}>
+          <HomePage />
+        </div>
+      )
     },
   },
 }

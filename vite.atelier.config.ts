@@ -7,12 +7,16 @@ import type { Plugin } from 'vite'
 import type { RegistryEntry } from './.atelier/registry/types'
 
 /**
- * Auto-scan preview/mocks/{category}/ and build one regex alias per file.
+ * Auto-scan .atelier/mocks/{category}/ and build one regex alias per file.
  * The regex matches the module name at any import depth and with any prefix
  * (@/, ../, ../../, etc.), so no per-file Vite config is needed.
  * Adding a new mock file in the right folder is all that's required.
+ *
+ * `category` may be a nested path (e.g. 'components/ui') — the regex still
+ * matches `@/components/ui/Button` etc. correctly because slashes are
+ * preserved verbatim.
  */
-function buildMockAliases(category: 'hooks' | 'actions') {
+function buildMockAliases(category: string) {
   const dir = path.resolve(__dirname, `.atelier/mocks/${category}`)
   return readdirSync(dir)
     .filter(f => f.endsWith('.ts') || f.endsWith('.tsx'))
@@ -66,6 +70,7 @@ export default defineConfig({
     alias: [
       ...buildMockAliases('hooks'),
       ...buildMockAliases('actions'),
+      ...buildMockAliases('components/ui'),
       { find: '@', replacement: path.resolve(__dirname, '.') },
     ],
   },

@@ -13,7 +13,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "baseUrl": "..",
-    "ignoreDeprecations": "6.0",
+    "ignoreDeprecations": "5.0",
     "types": ["vite/client"],
     "paths": {
       "@/actions/user": ["./.atelier/mocks/actions/user.ts"],
@@ -21,6 +21,7 @@
       "@/hooks/useRelatedBlocks": ["./.atelier/mocks/hooks/useRelatedBlocks.ts"],
       "@/hooks/useArenaSearch": ["./.atelier/mocks/hooks/useArenaSearch.ts"],
       "@/hooks/useRateLimit": ["./.atelier/mocks/hooks/useRateLimit.ts"],
+      "@/components/ui/Button": ["./.atelier/mocks/components/ui/Button.tsx"],
       "@/*": ["./*"]
     }
   },

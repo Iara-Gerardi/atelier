@@ -1,4 +1,5 @@
 import type { RegistryEntry } from '@/.atelier/registry/types'
+import { defaultVariants } from './variants'
 
 interface CanvasGridProps {
   entries: RegistryEntry[]
@@ -31,7 +32,7 @@ export default function CanvasGrid({ entries }: CanvasGridProps) {
                 <span className="text-[10px] text-gray-400">{entry.category}</span>
               </div>
               <div className="flex min-h-32 items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 p-6">
-                {render()}
+                {render({ variants: defaultVariants })}
               </div>
               {entry.tags && entry.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1">
