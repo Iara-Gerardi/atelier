@@ -18,7 +18,10 @@ type SceneModule = {
   meta: SceneMeta
 }
 
-const frameMods = import.meta.glob<FrameModule>('../mocks/**/*.frame.tsx', { eager: true })
+const frameMods = {
+  ...import.meta.glob<FrameModule>('../mocks/**/*.frame.tsx', { eager: true }),
+  ...import.meta.glob<FrameModule>('../frames/**/*.frame.tsx', { eager: true }),
+}
 const sceneMods = import.meta.glob<SceneModule>('../scenes/**/*.scene.tsx', { eager: true })
 
 export const registry: RegistryEntry[] = Object.values(frameMods).map((mod) => ({

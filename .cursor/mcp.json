@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "atelier": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["tsx", "scripts/atelier-mcp/index.ts"],
+      "env": {
+        "ATELIER_URL": "http://localhost:5173"
+      }
+    }
+  }
+}
