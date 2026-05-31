@@ -6,5 +6,5 @@ export const generateFrameTool = {
   name: 'generateFrame',
   description: 'Generate a typed Atelier frame from a single component source file.',
   parameters: generateFrameInputSchema,
-  execute: async (input: GenerateFrameInput) => runGenerateFrame(input),
+  execute: async (input: GenerateFrameInput) => runGenerateFrame(input, { calledFrom: 'tool' }),
 }

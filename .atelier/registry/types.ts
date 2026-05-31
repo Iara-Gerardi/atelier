@@ -58,6 +58,12 @@ export interface Outcome {
    */
   description: string
   /**
+   * Required. Plain-language description of the user action that fires this
+   * outcome (e.g. "Click the Submit button"). Used by agents to generate the
+   * action step in "How to reach this state" sections of qa cases.
+   */
+  trigger: string
+  /**
    * Exactly one outcome per node should be marked default. The split-button's
    * primary face fires this outcome on click. If none is marked, the first
    * outcome is used.
@@ -79,6 +85,13 @@ export interface SceneNode {
   gate?: (ctx: RenderContext) => boolean
   /** Node id to redirect to when `gate` fails. Required when `gate` is set. */
   fallback?: string
+  /**
+   * Plain-language description of the variant condition that causes the gate
+   * to fail (e.g. "Navigate as a role without professor or admin access").
+   * Required by convention when `gate` is set; used by agents as the setup
+   * step for redirect qa cases so they do not need to parse the gate function.
+   */
+  gateTrigger?: string
 }
 
 export interface SceneMeta {

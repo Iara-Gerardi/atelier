@@ -38,6 +38,10 @@ export default states
 
 **Always pass a `key` prop** matching the state name on the root component element. This forces React to remount the component when the state changes, preventing stale state from bleeding between previews.
 
+**A frame file must contain exactly two things: the `meta` named export and the `states` default export.** No helper functions, no constants, no additional exports. Fixture data, shared mock values, and setup utilities belong in a sibling file (e.g. `MyComponent.frame.fixtures.ts`) or inside the action/hook mock file — never in the frame file itself.
+
+**Render functions must be logic-less.** The only code permitted inside `render` is the setter call(s) needed to configure mocks and the JSX return. No conditionals, no computed variables, no helper calls. If a logic variation changes what the user sees, it is a separate state — not a branch inside an existing one.
+
 ---
 
 ## Writing state descriptions
@@ -73,6 +77,8 @@ Every description must answer:
 
 ## What qualifies as a distinct state?
 
+**Rule:** Read the component source top to bottom. Every conditional expression (`if`, ternary, `&&`) that changes what the user sees is a distinct state. Each one maps to exactly one state key — no fewer (don't collapse two visual outcomes into one state), no more (don't add states the component can never actually reach).
+
 A state is any meaningfully different visual or interactive configuration of the component. **Enumerate all states upfront** — the goal is that every visual variant a real user could encounter is represented as a named state in the frame file.
 
 | Category | Examples |
@@ -97,15 +103,15 @@ Rules of thumb:
 const states: Record<StateKey, ComponentState> = {
   guest: {
     description: 'Unauthenticated visitor — shows login prompt',
-    render: () => { setUseSession(() => ({ user: null })); return <NavBar key="guest" /> },
+    render: () => { setUseSession('guest'); return <NavBar key="guest" /> },
   },
   logged_in: {
     description: 'Authenticated user — shows avatar and nav links',
-    render: () => { setUseSession(() => ({ user: { name: 'Ada', role: 'user' } })); return <NavBar key="logged_in" /> },
+    render: () => { setUseSession('logged_in'); return <NavBar key="logged_in" /> },
   },
   admin: {
     description: 'Admin user — shows extra controls',
-    render: () => { setUseSession(() => ({ user: { name: 'Ada', role: 'admin' } })); return <NavBar key="admin" /> },
+    render: () => { setUseSession('admin'); return <NavBar key="admin" /> },
   },
 }
 ```
@@ -114,25 +120,47 @@ const states: Record<StateKey, ComponentState> = {
 
 ## Intercepting server actions
 
+**Scope rule:** only create a mock for an action that is used by a component that has a frame. Do not mock every action in the codebase.
+
+**What counts as a mock state:** every distinct resolved return shape is one state; every distinct thrown error is one state. Name states after the behavior (`success`, `not_found`, `server_error`), not the transport (`200`, `404`, `500`).
+
 If a component imports a server action (e.g. `import { getProducts } from '@/actions/product'`), create a mock interceptor. Action types live in a separate `actions/myAction.types.ts` — import from there, **not** from the action file itself (which would be circular):
 
 ```ts
 // .atelier/mocks/actions/myAction.ts
 import type { MyResult } from '@/actions/myAction.types'
 
-type Fn = () => Promise<MyResult>
-let _impl: Fn = () => { throw new Error('Not configured') }
-export function setMyAction(impl: Fn): void { _impl = impl }
-export async function myAction(): Promise<MyResult> { return _impl() }
+export const meta = {
+  states: ['success', 'not_found', 'server_error'] as const,
+} as const
+
+export type MockState = typeof meta.states[number]
+
+const fixtures: Record<MockState, () => Promise<MyResult>> = {
+  success: () => Promise.resolve({ /* fixture data */ }),
+  not_found: () => Promise.reject(new Error('Not found')),
+  server_error: () => Promise.reject(new Error('Server error')),
+}
+
+let _state: MockState = 'success'
+export function setMyAction(state: MockState): void { _state = state }
+export async function myAction(): Promise<MyResult> { return fixtures[_state]() }
 ```
+
+Rules:
+- **`meta.states`** is the single source of truth for state names. `MockState` is derived from it — never write the union type by hand.
+- **Fixture data lives in the mock file** — not in the frame. Frames call `setMyAction('success')`; they do not pass fixture objects.
+- **The first entry in `meta.states` is the default state.** `_state` is initialized to it so standalone previews work before any setter call.
+- **The exported function name must match the real action** so the Vite alias is transparent.
+- **Input arguments are not part of the mock contract.** Action params are ignored; the active state determines the output. Do not model input variations as states.
 
 Drop the file in `.atelier/mocks/actions/` — the Vite config auto-scans that folder and creates the alias automatically. **No Vite config change needed.**
 
-Use the setter inside each state's `render` function:
+Use the setter inside each frame state's `render` function:
 
 ```tsx
 render: () => {
-  setMyAction(() => Promise.resolve(myData))
+  setMyAction('success')
   return <MyComponent key="success" />
 },
 ```
@@ -183,11 +211,25 @@ import type { UseMyHookResult } from '../../../hooks/useMyHook.types'
 
 export type { UseMyHookResult }
 
-type UseMyHookFn = () => UseMyHookResult
-let _impl: UseMyHookFn = () => ({ /* sensible defaults */ })
-export function setUseMyHook(impl: UseMyHookFn): void { _impl = impl }
-export function useMyHook(_arg: unknown): UseMyHookResult { return _impl() }
+export const meta = {
+  states: ['idle', 'loading', 'success', 'error'] as const,
+} as const
+
+export type MockState = typeof meta.states[number]
+
+const fixtures: Record<MockState, UseMyHookResult> = {
+  idle:    { /* sensible idle defaults */ },
+  loading: { isLoading: true, /* ... */ },
+  success: { /* populated result */ },
+  error:   { error: 'Something went wrong', /* ... */ },
+}
+
+let _state: MockState = 'idle'
+export function setUseMyHook(state: MockState): void { _state = state }
+export function useMyHook(_arg: unknown): UseMyHookResult { return fixtures[_state] }
 ```
+
+Same rules apply as for action mocks: `meta.states` is the source of truth, fixture data lives in this file, hook input arguments are ignored — the active state determines the return value.
 
 Drop in `.atelier/mocks/hooks/` — auto-aliased by Vite. **No Vite config change needed.**
 

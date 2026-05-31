@@ -31,11 +31,14 @@ const scene: SceneDef = {
       gate: ({ variants }) =>
         variants.auth === 'professor' || variants.auth === 'admin',
       fallback: 'notFound',
+      gateTrigger:
+        'Navigate as a role without professor or admin access (e.g. auth=guest or auth=student)',
       outcomes: [
         {
           id: 'success',
           frame: 'AddStudentStatus',
           state: 'success',
+          trigger: 'Click the Submit button',
           description:
             'Submission accepted; student record created and the success card is shown.',
           default: true,
@@ -44,6 +47,7 @@ const scene: SceneDef = {
           id: 'error',
           frame: 'AddStudentStatus',
           state: 'error',
+          trigger: 'Click the Submit button',
           description:
             'Server rejected the submission (e.g. email already registered) and surfaces the error card.',
         },

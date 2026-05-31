@@ -43,6 +43,7 @@ export interface Outcome {
   id: string
   frame: string           // required AND must differ from the node's frame
   state: StateKey         // initial state on the target frame
+  trigger: string         // required — user action that fires this outcome; used by agents to generate test steps
   description: string     // required — surfaces as dropdown subtitle + qa text
   default?: boolean       // primary face of the split-button (one per node)
   set?: PartialVariants   // variant flips applied on dispatch
@@ -54,6 +55,7 @@ export interface SceneNode {
   outcomes?: Outcome[]
   gate?: (ctx: RenderContext) => boolean   // evaluated on every render
   fallback?: string                        // node id; required when gate is set
+  gateTrigger?: string                     // required by convention when gate is set — describes the variant condition that causes the gate to fail; used by agents as the setup step for redirect qa cases
 }
 
 export interface SceneDef { initial: string; nodes: Record<string, SceneNode> }
@@ -69,7 +71,7 @@ Atelier has two extra concepts that build on top of frames:
 
 - **Scenes** — flows that live in `.atelier/scenes/*.scene.tsx`. A scene declares `initial` + `nodes`, where each node points at an existing `(frame, state)` and may declare `outcomes` (declarative "what could the user do here?") and `gate` + `fallback` (access control). Scenes are auto-discovered — do not register them manually.
 
-- **Outcomes are *frame transitions only*.** An outcome is `{ id, frame, state, description, default?, set? }` where `frame` **must point at a different frame than the node's own** — same-frame state navigation belongs on the **StateBar** that sits above the canvas, not on the dropdown. The mocked `@/components/ui/Button` (see below) reads the node's outcomes and renders a split-button labelled "Go to <outcome.id>"; the primary face fires the outcome with `default: true`. After dispatch, the user is "downstream": the rendered frame and state are determined by the outcome (and may then be re-navigated via the StateBar without going back through the dropdown).
+- **Outcomes are *frame transitions only*.** An outcome is `{ id, frame, state, trigger, description, default?, set? }` where `frame` **must point at a different frame than the node's own** — same-frame state navigation belongs on the **StateBar** that sits above the canvas, not on the dropdown. The mocked `@/components/ui/Button` (see below) reads the node's outcomes and renders a split-button labelled "Go to <outcome.id>"; the primary face fires the outcome with `default: true`. After dispatch, the user is "downstream": the rendered frame and state are determined by the outcome (and may then be re-navigated via the StateBar without going back through the dropdown).
 
 - **StateBar vs. outcome dropdown.** The StateBar previews any of the *current rendered frame's* declared states. The outcome dropdown lists only the states that are *reachable as outcomes* from the entry node — typically a strict subset of the target frame's states. If a frame has a state that the real feature never reaches from this node, leave it out of `outcomes`; users can still preview it via the StateBar.
 
@@ -103,8 +105,10 @@ For QA test runs, invoke the `qa-agent` (`.github/agents/qa-agent.agent.md`).
 
 - [ ] Component created in `components/` — follow folder/nesting rules in the skill's `app-architecture.md`
 - [ ] Frame file created at `.atelier/mocks/<ComponentName>.frame.tsx` with `meta` export + default states
-- [ ] If component uses a server action: mock interceptor created in `.atelier/mocks/actions/`
-- [ ] If component uses a hook: mock interceptor created in `.atelier/mocks/hooks/` + path added to `.atelier/tsconfig.json`
+- [ ] If component uses a server action: mock created in `.atelier/mocks/actions/` with `meta.states` const array, `MockState` type derived from it, fixture data inside the mock file, and setter that takes `MockState` as its only arg
+- [ ] If component uses a hook: same mock pattern in `.atelier/mocks/hooks/` + path added to `.atelier/tsconfig.json`
+- [ ] Mock only covers actions/hooks used by components that have frames — not every export in the codebase
+- [ ] Mock imports types from `.types.ts` only; exported name and signature match the real function
 - [ ] States cover: loading, error, success, and any meaningful interaction variants
 - [ ] If the frame's behavior depends on a global variant axis (auth, locale, theme, …), declare `meta.variants: [...] as const` and consume them via `({ variants }) => …`
 - [ ] Primary actions and form submits use `@/components/ui/Button` (not inline `<button>`) so they participate in the scene's outcome dropdown automatically

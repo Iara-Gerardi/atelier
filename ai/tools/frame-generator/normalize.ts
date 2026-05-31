@@ -8,6 +8,63 @@ interface NormalizeFrameParams {
   variants: string[]
 }
 
+const META_EXPORT_PATTERN = /export const meta\s*(?::\s*MockMeta(?:<[^>]+>)?)?\s*=\s*\{/
+const META_EXPORT_GLOBAL_PATTERN = /export const meta\s*(?::\s*MockMeta(?:<[^>]+>)?)?\s*=\s*\{/g
+
+function findObjectEndIndex(source: string, openingBraceIndex: number): number {
+  let depth = 0
+
+  for (let index = openingBraceIndex; index < source.length; index += 1) {
+    const char = source[index]
+
+    if (char === '{') {
+      depth += 1
+      continue
+    }
+
+    if (char === '}') {
+      depth -= 1
+      if (depth === 0) return index
+      continue
+    }
+
+    if (char === "'" || char === '"' || char === '`') {
+      const quote = char
+      index += 1
+      while (index < source.length) {
+        const current = source[index]
+        if (current === '\\') {
+          index += 2
+          continue
+        }
+        if (current === quote) break
+        index += 1
+      }
+    }
+  }
+
+  throw new Error('Generated frame has an unterminated meta object declaration.')
+}
+
+function removeDuplicateMetaExports(source: string): string {
+  const matches = [...source.matchAll(META_EXPORT_GLOBAL_PATTERN)]
+  if (matches.length <= 1) return source
+
+  let nextSource = source
+
+  for (let index = matches.length - 1; index >= 1; index -= 1) {
+    const match = matches[index]
+    const start = match.index
+    if (start == null) continue
+
+    const openingBraceIndex = start + match[0].length - 1
+    const end = findObjectEndIndex(nextSource, openingBraceIndex)
+    nextSource = `${nextSource.slice(0, start)}${nextSource.slice(end + 1)}`
+  }
+
+  return nextSource
+}
+
 export function normalizeFrameSource(
   generatedText: string,
   params: NormalizeFrameParams
@@ -33,11 +90,9 @@ export function normalizeFrameSource(
   }
 
   const metaTyped = `export const meta: MockMeta${variantGeneric} = {`
-  if (/export const meta\s*=/.test(source)) {
-    source = source.replace(
-      /export const meta\s*(?::\s*MockMeta(?:<[^>]+>)?)?\s*=\s*\{/,
-      metaTyped
-    )
+  if (META_EXPORT_PATTERN.test(source)) {
+    source = source.replace(META_EXPORT_PATTERN, metaTyped)
+    source = removeDuplicateMetaExports(source)
   } else {
     const tagsLiteral = params.tags.length > 0 ? `,\n  tags: ${JSON.stringify(params.tags)}` : ''
     const variantsLiteral =
@@ -47,14 +102,36 @@ export function normalizeFrameSource(
     source = `${source}\n\n${metaTyped}\n  name: '${params.componentName}',\n  category: '${params.category}'${tagsLiteral}${variantsLiteral},\n}\n`
   }
 
+  const metaCount = (source.match(/\bexport const meta\b/g) ?? []).length
+  if (metaCount !== 1) {
+    throw new Error('Generated frame must contain exactly one meta export.')
+  }
+
   const statesTyped = `const states: Record<StateKey, ComponentState${variantGeneric}> = {`
-  if (/const states\s*=/.test(source)) {
-    source = source.replace(
-      /const states\s*(?::\s*Record<StateKey,\s*ComponentState(?:<[^>]+>)?>)?\s*=\s*\{/,
-      statesTyped
-    )
+  const statesDeclarationRegex =
+    /(^|\n)\s*(?:export\s+)?(?:const|let|var)\s+states\s*(?::\s*[^=]+)?\s*=\s*\{/
+
+  if (statesDeclarationRegex.test(source)) {
+    source = source.replace(statesDeclarationRegex, `$1${statesTyped}`)
   } else {
-    throw new Error('Generated frame is missing `const states = { ... }`.')
+    const exportedIdentifierMatch = source.match(/export\s+default\s+([A-Za-z_$][\w$]*)\b/)
+    const exportedIdentifier = exportedIdentifierMatch?.[1]
+
+    if (exportedIdentifier && exportedIdentifier !== 'states') {
+      const declarationRegex = new RegExp(
+        `(^|\\n)\\s*(?:export\\s+)?(?:const|let|var)\\s+${escapeRegExp(exportedIdentifier)}\\s*(?::\\s*[^=]+)?\\s*=\\s*\\{`
+      )
+
+      if (declarationRegex.test(source)) {
+        source = source.replace(declarationRegex, `$1${statesTyped}`)
+      } else {
+        throw new Error('Generated frame is missing a normalizable states object declaration.')
+      }
+    } else if (/export\s+default\s+\{/.test(source)) {
+      source = source.replace(/export\s+default\s+\{/, statesTyped)
+    } else {
+      throw new Error('Generated frame is missing a normalizable states object declaration.')
+    }
   }
 
   if (!/export default states\b/.test(source)) {

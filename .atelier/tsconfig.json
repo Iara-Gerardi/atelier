@@ -13,7 +13,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "baseUrl": "..",
-    "ignoreDeprecations": "5.0",
+    "ignoreDeprecations": "6.0",
     "types": ["vite/client"],
     "paths": {
       "@/actions/user": ["./.atelier/mocks/actions/user.ts"],

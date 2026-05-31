@@ -12,6 +12,7 @@ Components are written exactly as they would ship. Each frame file defines the v
 - **Auto-registered frames** — drop a `*.frame.tsx` file into `.atelier/mocks/` and it appears in the sidebar automatically; no manual registration
 - **Hot reload** — edits to components or frame files reflect instantly
 - **Canvas mode** — view all components at once with category and tag filtering
+- **Scenes** — define multi-screen user flows in `.atelier/scenes/*.scene.tsx`; each scene wires frames together via outcomes (frame transitions) and optional gates (access control); the mocked `Button` becomes a split dropdown in scene mode automatically
 - **Bug tracking** — fixes are documented automatically in `qa/pending/` by the agent and verified by the dedicated QA agent
 
 ## Stack
@@ -71,6 +72,49 @@ The sidebar updates automatically — no registration step needed.
 
 **4. Intercept server actions or hooks** (if the component uses them) by adding files to `.atelier/mocks/actions/` or `.atelier/mocks/hooks/`. The Vite config auto-aliases these — no config change needed. See the atelier skill reference for full patterns.
 
+## Adding a scene
+
+Scenes live in `.atelier/scenes/*.scene.tsx` and are auto-discovered. A scene declares an `initial` node and a map of `nodes`, each pointing at an existing `(frame, state)`.
+
+```tsx
+// .atelier/scenes/MyFlow.scene.tsx
+import type { SceneDef, SceneMeta } from '@/.atelier/registry/types'
+
+export const meta: SceneMeta = { name: 'MyFlow', category: 'Flows' }
+
+const scene: SceneDef = {
+  initial: 'start',
+  nodes: {
+    start: {
+      frame: 'MyForm',
+      state: 'idle',
+      gate: ({ variants }) => variants.auth === 'admin',
+      fallback: 'notFound',
+      gateTrigger: 'Navigate as a non-admin role (e.g. auth=guest)',
+      outcomes: [
+        {
+          id: 'success',
+          frame: 'MyConfirmation',
+          state: 'success',
+          trigger: 'Click the Submit button',
+          description: 'Form accepted; confirmation screen is shown.',
+          default: true,
+        },
+      ],
+    },
+    notFound: { frame: 'NotFound', state: 'default' },
+  },
+}
+
+export default scene
+```
+
+Key rules:
+- `outcome.frame` must differ from the node's own `frame` — outcomes are frame transitions, not state changes. Use the StateBar for intra-frame states.
+- `trigger` is required on every outcome — describes the user action that fires it; used by agents to generate QA test steps.
+- `gateTrigger` is required by convention when `gate` is set — describes the variant condition that fails the gate; agents use it as the setup step for redirect cases.
+- Primary actions must use `@/components/ui/Button` (not `<button>`) to participate in the outcome dropdown automatically.
+
 ## Project structure
 
 ```
@@ -100,7 +144,9 @@ hooks/
       useArenaSearch.ts        # hook interceptor (auto-aliased)
   registry/
     index.ts                   # assembles registry via import.meta.glob
-    types.ts                   # StateKey, ComponentState, MockMeta, RegistryEntry
+    types.ts                   # StateKey, ComponentState, MockMeta, RegistryEntry, Outcome, SceneNode
+  scenes/
+    AddStudent.scene.tsx       # example scene — meta + SceneDef (nodes, outcomes, gate/fallback)
   PreviewShell.tsx             # sidebar + canvas + state switcher
   StateBar.tsx                 # state tab bar
   ComponentCanvas.tsx          # renders active state

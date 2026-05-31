@@ -169,7 +169,7 @@ server.tool(
     model: generateFrameInputSchema.shape.model,
   },
   async (input) => {
-    const result = await runGenerateFrame(input, { rootDir: process.cwd() })
+    const result = await runGenerateFrame(input, { rootDir: process.cwd(), calledFrom: 'mcp' })
     const header = [
       `Mode: ${result.mode}`,
       `Output path: ${result.outputPath}`,
@@ -214,7 +214,7 @@ server.tool(
         componentName: normalizedComponentName,
         componentPath,
       },
-      { rootDir: process.cwd() }
+      { rootDir: process.cwd(), calledFrom: 'mcp' }
     )
 
     const header = [
@@ -229,8 +229,6 @@ server.tool(
       result.mode === 'preview'
         ? `${header}${result.frameSource}`
         : `${header}Frame file written successfully.`
-
-        console.log
     return { content: [{ type: 'text', text }] }
   }
 )

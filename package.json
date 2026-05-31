@@ -11,6 +11,11 @@
     "gen-frame": "tsx scripts/generate-frame.ts"
   },
   "dependencies": {
+    "@ai-sdk/devtools": "^0.0.18",
+    "@opentelemetry/api-logs": "^0.218.0",
+    "@opentelemetry/instrumentation": "^0.218.0",
+    "@opentelemetry/sdk-logs": "^0.218.0",
+    "@vercel/otel": "^2.1.2",
     "ai": "^6.0.188",
     "next": "^15.5.18",
     "react": "19.1.0",

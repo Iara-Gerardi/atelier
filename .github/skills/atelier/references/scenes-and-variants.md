@@ -10,6 +10,10 @@ This document is the reference for both. If something here contradicts a frame-l
 
 ### What is and isn't a variant
 
+**Cross-cutting test:** ask "does more than one unrelated frame react to this axis?" If the answer is no, it belongs as a frame state, not a variant. Apply this test before reaching for a new variant axis.
+
+**Variants are read-only values, not mock configurators.** A variant is a typed value passed to `render({ variants })`. It does not call setters, configure mocks, or trigger side effects. A frame's render may read a variant value and then call a mock setter accordingly — that logic lives in the frame, not in the variant definition.
+
 A variant is a **truly cross-cutting global axis** of application state. Good candidates:
 
 - `auth` — user role / authentication status. Almost every page changes based on it.
@@ -28,7 +32,7 @@ Rule of thumb: if only one page reads the axis, it should live as a frame state,
 
 ### Registry shape
 
-`.atelier/variants.ts` is the single source of truth. Each axis carries axis-level metadata and per-value metadata so agents can pick meaningful values:
+`.atelier/variants.ts` is the single source of truth. Each axis carries axis-level metadata and per-value metadata so agents can pick meaningful values. Every axis must declare a **fixed, enumerated set of values and a required `default`** — free-form string axes are not valid.
 
 ```ts
 export const variantAxes = {
@@ -75,11 +79,12 @@ const states: Record<StateKey, ComponentState<'auth'>> = {
 }
 ```
 
-Three rules when opting in:
+Four rules when opting in:
 
 1. Declare the axis in `meta.variants` so the `VariantBar` shows in this frame.
 2. Destructure `({ variants })` in `render` — the type already narrows to your declared subset.
 3. Include each axis value in the React `key` so the frame remounts when it changes (mocks like `setGetProducts` only fire on render).
+4. Opting in is explicit and per-frame — a new axis is invisible to every frame that doesn't declare it in `meta.variants`.
 
 Frames that opt into no axes do not show the `VariantBar` at all in standalone mode.
 
@@ -127,11 +132,14 @@ const scene: SceneDef = {
       gate: ({ variants }) =>
         variants.auth === 'professor' || variants.auth === 'admin',
       fallback: 'notFound',
+      gateTrigger:
+        'Navigate as a role without professor or admin access (e.g. auth=guest or auth=student)',
       outcomes: [
         {
           id: 'success',
           frame: 'AddStudentStatus',
           state: 'success',
+          trigger: 'Click the Submit button',
           description: 'Submission accepted; student created and the success card is shown.',
           default: true,
         },
@@ -139,6 +147,7 @@ const scene: SceneDef = {
           id: 'error',
           frame: 'AddStudentStatus',
           state: 'error',
+          trigger: 'Click the Submit button',
           description: 'Server rejected the submission (e.g. email already registered).',
         },
       ],
@@ -160,13 +169,16 @@ export default scene
 | `id` | `string` | yes | Stable identifier; surfaces in the dropdown ("Go to <id>") and in qa case ids. |
 | `frame` | `string` | **yes** | Target frame to render after dispatch. **Must differ from the node's `frame`** — outcomes are frame transitions, not state changes. |
 | `state` | `StateKey` | yes | Initial state shown on the target `frame`. Subsequent state changes on that frame are the StateBar's job. |
-| `description` | `string` | yes | Plain-language explanation; rendered as the dropdown item subtitle and consumed by the scene-coverage skill. |
+| `trigger` | `string` | **yes** | Plain-language description of the user action that fires this outcome (e.g. "Click the Submit button"). Used by agents to generate the action step in test cases. |
+| `description` | `string` | yes | Plain-language explanation of the result; rendered as the dropdown item subtitle and consumed by the scene-coverage skill. |
 | `default` | `boolean` | no | Marks the split-button's primary face. Exactly one per node. |
 | `set` | `PartialVariants` | no | Variant flips applied on dispatch. |
 
 ### Gate + fallback
 
 `gate` is `(ctx: { variants }) => boolean`. It runs every render of the node (initial mount, after an outcome dispatch, or when a variant changes via the bar). When it returns `false`, `SceneCanvas` navigates the scene to `fallback` (a node id) and updates the URL. A gate without a fallback is an error and `scene-coverage` will refuse to emit cases for it.
+
+When `gate` is set, also declare `gateTrigger: string` on the node — a plain-language description of the variant condition that causes the gate to fail (e.g. `'Navigate as a role without professor or admin access'`). This is required by convention: agents cannot parse the gate function, so `gateTrigger` is the only signal they have for generating the setup step of redirect qa cases.
 
 Use gates for **access control** only — "this screen is unreachable under variant X". Page-local conditional UI belongs in the component itself.
 

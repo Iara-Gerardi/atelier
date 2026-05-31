@@ -27,8 +27,12 @@ The entry point for the feature. Contains:
 
 - **Front-matter**: name, slug, status, created date, tags
 - **Summary**: one-paragraph description of what the feature does and why it exists
-- **File references**: links to the components, actions, hooks, and any other source files that belong to this feature
-- **Links** to `flow.md` and `frames.md`
+- **Feature definition**: goal, actor, entry points, and clear in-scope / out-of-scope boundaries
+- **Entry points / pages**: routes/pages/layout touchpoints where the feature starts
+- **File references**: links to components, actions, hooks, utilities, and other supporting files that belong to this feature
+- **Integrations**: evidence-backed links to other features this one composes with or depends on
+- **Traceability checklist**: key summary claims mapped to concrete source file evidence
+- **Links** to `flow.md`, `frames.md`, and `scenes.md`
 
 ### `flow.md`
 

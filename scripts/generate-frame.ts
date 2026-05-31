@@ -108,17 +108,20 @@ async function main(): Promise<void> {
   }
 
   const componentPath = `components/${args.src}.tsx`
-  const result = await runGenerateFrame({
-    componentPath,
-    componentName: args.src,
-    category: args.category ?? 'Components',
-    tags: args.tags ?? [],
-    stateHints: args.states ?? [],
-    variants: args.variants ?? [],
-    outputPath: args.outputPath,
-    mode: 'write',
-    ...(args.model ? { model: args.model } : {}),
-  })
+  const result = await runGenerateFrame(
+    {
+      componentPath,
+      componentName: args.src,
+      category: args.category ?? 'Components',
+      tags: args.tags ?? [],
+      stateHints: args.states ?? [],
+      variants: args.variants ?? [],
+      outputPath: args.outputPath,
+      mode: 'write',
+      ...(args.model ? { model: args.model } : {}),
+    },
+    { calledFrom: 'cli' }
+  )
 
   console.log(`Generated frame: ${result.outputPath}`)
   console.log(`Component source: ${result.componentPath}`)

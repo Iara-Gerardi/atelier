@@ -76,7 +76,7 @@ For every node `N` in `scene.nodes`:
       - If `N` is the scene's `initial` node, emit a **redirect case** for that `(N, V)`: arriving at `N` under `V` should immediately render `N.fallback`'s frame inline (URL keeps `node=N`; no navigation happens).
       - If `N` is not the initial node, the redirect is implicit elsewhere — skip.
    3. If true, emit a **node-arrival case**: at `N` with `V` the rendered frame should be `N.frame` at state `N.state`; the StateBar should list every state of `N.frame`; the mocked `@/components/ui/Button` should render a split dropdown listing exactly the outcomes whose `frame !== N.frame` (in v3 that's all of them) as "Go to <id>" items.
-   4. For every `outcome` in `N.outcomes` (when gate passed) emit one **outcome case**: dispatching `outcome` from `N` under `V` should re-render the frame at `(outcome.frame, outcome.state)`, flip variants per `outcome.set`, and after dispatch the StateBar should list all states of `outcome.frame` — including states that are NOT declared as outcomes of any node (they're "preview-only" states reachable via the StateBar).
+   4. For every `outcome` in `N.outcomes` (when gate passed) emit one **outcome case**: dispatching `outcome` from `N` under `V` should re-render the frame at `(outcome.frame, outcome.state)`, flip variants per `outcome.set`, and after dispatch the StateBar should list all states of `outcome.frame` — including states that are NOT declared as outcomes of any node (they're "preview-only" states reachable via the StateBar). Use `outcome.trigger` as the action step in the "How to reach this state" section of the case.
 
 Bounds:
 
@@ -108,6 +108,10 @@ For each computed case id, check `qa/pending/`, `qa/verified/`, and `qa/archived
 
 Use the template in [references/case-template.md](./references/case-template.md) verbatim. Fill `source_scene`, `node`, `outcome` (when present), `expected_frame`, `expected_state`, `variants`, and the checklist from the enumeration. Always include `source_scene` so a future invocation can identify which scene a case derives from.
 
+For **outcome cases**, use `outcome.trigger` as the action step in the "How to reach this state" section (e.g. step 3 or 4 depending on the template). Do not infer or fabricate the trigger from the frame's source code.
+
+For **redirect cases**, use `node.gateTrigger` as the setup instruction in the "How to reach this state" section. If `gateTrigger` is absent, leave a placeholder `[set variant to trigger gate failure]` and flag it as a warning.
+
 ### 7. Tell the user
 
 In your final message: number of cases emitted, number skipped (idempotency), and any inconsistencies or stale cases that need human attention.
@@ -117,6 +121,7 @@ In your final message: number of cases emitted, number skipped (idempotency), an
 ## Enumeration sanity rules
 
 - **A node with a gate must have a fallback.** If `gate` is set without `fallback`, emit zero cases for that node and surface the problem.
+- **A node with a gate must have a `gateTrigger`.** If `gate` is set without `gateTrigger`, emit the redirect case but warn the user that the "How to reach this state" step will be incomplete.
 - **`outcome.set` mutates the variant assignment in the case's expected post-state.** The case's `variants` front-matter records the **entry** assignment; the post-dispatch values appear in the body checklist.
 - **Each node should have exactly one `outcome` marked `default: true`.** Warn (but still emit) if zero or multiple are marked.
 - **`outcome.frame` must differ from `node.frame`.** Outcomes are frame transitions. If a scene declares a same-frame outcome, warn and skip — SceneCanvas filters it out at runtime, so the qa case would not match the rendered UI.

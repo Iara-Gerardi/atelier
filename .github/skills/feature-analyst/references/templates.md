@@ -19,6 +19,20 @@ tags: [<tag1>, <tag2>]
 
 <One paragraph. What the feature does, who uses it, and why it exists. Write for a developer reading it cold.>
 
+## Feature definition
+
+- **Goal**: <What user problem this capability solves>
+- **Primary actor**: <Who mainly uses it>
+- **Entry points**: <Route/page/layout + feature root component>
+- **In scope**: <Behaviors this feature owns>
+- **Out of scope**: <Adjacent concerns this feature does not own>
+
+## Entry points / pages
+
+- `app/page.tsx`
+- `app/<segment>/page.tsx`
+- `app/<segment>/layout.tsx`
+
 ## Source files
 
 ### Components
@@ -30,6 +44,23 @@ tags: [<tag1>, <tag2>]
 
 ### Hooks
 - `hooks/<useHookName>.ts`
+
+### Utilities
+- `utils/<helper>.ts`
+
+### Other supporting files
+- `actions/<domain>.types.ts`
+- `components/<FeatureName>/constants.ts`
+
+## Integrations with other features
+
+- `<other-feature-slug>` — <How this feature integrates: import, shared hook/action, scene handoff, or composition boundary>
+
+## Traceability checklist
+
+- [ ] Summary claim: <key behavior> -> backed by `<path/to/file.ts>`
+- [ ] Summary claim: <entry path> -> backed by `<path/to/page-or-layout.tsx>`
+- [ ] Summary claim: <cross-feature integration> -> backed by `<path/to/evidence.ts>`
 
 ## Feature docs
 - [User flow](./flow.md)

@@ -19,6 +19,7 @@ All three shapes share the same front-matter contract.
 | `source_scene` | yes | Workspace-relative path to the `.scene.tsx` file. Lets future runs trace cases back to their spec. |
 | `node` | yes | Entry node id for the case. |
 | `outcome` | only for outcome cases | The outcome id being dispatched. Omit otherwise. |
+| `trigger` | only for outcome cases | The value of `outcome.trigger` — the user action that fires the outcome. Included for reference; also appears verbatim in the "How to reach this state" steps. |
 | `expected_frame` | yes | Frame name expected to render after gate evaluation and (if applicable) outcome dispatch. |
 | `expected_state` | yes | State key expected on `expected_frame` after the dispatch. For node-arrival cases this is the node's declared state; for outcome cases it is `outcome.state`. |
 | `variants` | yes | YAML map of the variant assignment at the **entry** node. Always list every axis explicitly (defaults included) so the case is self-contained. |
@@ -81,6 +82,7 @@ created: <YYYY-MM-DD>
 source_scene: .atelier/scenes/AddStudent.scene.tsx
 node: form
 outcome: error
+trigger: Click the Submit button
 expected_frame: AddStudentStatus
 expected_state: error
 variants:
@@ -103,7 +105,7 @@ Starting at the `form` node with `{ auth: 'professor' }` and dispatching the `er
 1. Open the Atelier preview.
 2. Navigate to `?scene=AddStudent&node=form&v=auth:professor`.
 3. Open the split-button caret menu.
-4. Click the `Go to error` item.
+4. Click the `Go to error` item. *(outcome.trigger: "Click the Submit button")*
 
 ## What the agent should check
 
@@ -144,7 +146,7 @@ Arriving at the `form` node of the `AddStudent` scene with default variants `{ a
 ## How to reach this state
 
 1. Open the Atelier preview.
-2. Navigate to `?scene=AddStudent&node=form` (no variant override, so `auth=guest`).
+2. Navigate to `?scene=AddStudent&node=form` (no variant override). *(node.gateTrigger: "Navigate as a role without professor or admin access (e.g. auth=guest or auth=student)" — default auth=guest satisfies this.)*
 
 ## What the agent should check
 
