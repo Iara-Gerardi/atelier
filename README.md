@@ -1,8 +1,10 @@
 # Atelier
 
-A dev-only component preview workbench designed for AI-driven development. Browse React components in isolation and cycle through their states — no backend, no mock server.
+A dev-only component preview workbench designed for AI-driven development. Browse React components in isolation, cycle through their states, and walk multi-screen user flows — all without running the full app or touching a backend.
 
-Components are written exactly as they would ship. Each frame file defines the visual states (loading, error, success, variants) as self-contained render functions. Server actions and hooks can be intercepted per-frame without modifying production code.
+Components are written exactly as they would ship. Each frame file defines the visual states (loading, error, success, variants) as self-contained render functions. Server actions and hooks are intercepted per-frame via Vite aliases, not replaced with fake props — so what you see in Atelier is what ships.
+
+The workbench is also the spec surface for agents. Frames, scenes, and variants give agents enough structure to generate components, write QA cases, and verify user flows without executing code.
 
 ## Features
 
@@ -13,6 +15,8 @@ Components are written exactly as they would ship. Each frame file defines the v
 - **Hot reload** — edits to components or frame files reflect instantly
 - **Canvas mode** — view all components at once with category and tag filtering
 - **Scenes** — define multi-screen user flows in `.atelier/scenes/*.scene.tsx`; each scene wires frames together via outcomes (frame transitions) and optional gates (access control); the mocked `Button` becomes a split dropdown in scene mode automatically
+- **AI frame generation** — generate frame files from a component name with `npm run gen-frame`
+- **MCP server** — exposes the registry to agents via the Atelier MCP so they can read frames and navigate scenes programmatically
 - **Bug tracking** — fixes are documented automatically in `qa/pending/` by the agent and verified by the dedicated QA agent
 
 ## Stack
@@ -31,16 +35,51 @@ npm run preview   # starts Vite, opens the Atelier preview in browser
 npm run dev       # starts Next.js app (independent of preview)
 ```
 
+The preview (`npm run preview`) and the app (`npm run dev`) are fully independent. You don't need to run `npm run dev` to use the workbench.
+
+## Environment setup
+
+### AI frame generation
+
+`npm run gen-frame` and the Atelier MCP call an LLM to generate frame files. Set one of these in your `.env.local`:
+
+```bash
+# Option A — direct OpenAI
+OPENAI_API_KEY=sk-...
+
+# Option B — AI Gateway (takes precedence over OPENAI_API_KEY)
+AI_GATEWAY_API_KEY=...
+```
+
+If neither key is present, `gen-frame` throws with a clear error. The preview (`npm run preview`) and `npm run dev` do **not** require these keys.
+
+### MCP server (for agents in VS Code / Cursor)
+
+The MCP server is already configured in `.vscode/mcp.json` and `.cursor/mcp.json`. It requires the preview to be running:
+
+```bash
+npm run preview   # must be running on port 5173
+```
+
+Then start the MCP server from your editor's MCP panel — it connects to `http://localhost:5173` automatically. No additional environment variables are needed.
+
 ## Adding a component
 
 **1. Create the component** in `components/`. If it fetches data, call a server action from `actions/` and manage loading/error states via Suspense + ErrorBoundary.
 
 **2. Create a server action** (if needed) in `actions/`. Keep types in a companion `*.types.ts` file — `'use server'` files may only export async functions.
 
-**3. Add a frame file** in `.atelier/mocks/YourComponent.frame.tsx`:
+**3. Add a frame file.** The fastest way is to let the AI generate it:
+
+```bash
+npm run gen-frame --src YourComponent --category "Your Category" --tags ui,forms --states idle,loading,error,success
+```
+
+This reads `components/YourComponent.tsx`, infers the frame structure, and writes `.atelier/mocks/YourComponent.frame.tsx`. Review and adjust the output before committing.
+
+To write a frame manually, create `.atelier/mocks/YourComponent.frame.tsx`:
 
 ```tsx
-// .atelier/mocks/YourComponent.frame.tsx
 import YourComponent from '@/components/YourComponent'
 import type { StateKey, ComponentState, MockMeta } from '@/.atelier/registry/types'
 
@@ -114,58 +153,3 @@ Key rules:
 - `trigger` is required on every outcome — describes the user action that fires it; used by agents to generate QA test steps.
 - `gateTrigger` is required by convention when `gate` is set — describes the variant condition that fails the gate; agents use it as the setup step for redirect cases.
 - Primary actions must use `@/components/ui/Button` (not `<button>`) to participate in the outcome dropdown automatically.
-
-## Project structure
-
-```
-actions/
-  user.ts                      # 'use server' — only async function exports
-  user.types.ts                # interfaces + error classes
-
-app/
-  layout.tsx                   # root layout
-  page.tsx                     # Next.js home
-
-components/
-  ui/                          # atomic UI primitives (Button, Badge, Label, …)
-  ExampleCard.tsx
-  ExampleForm.tsx
-
-hooks/
-  useMyHook.ts                 # real hook implementation
-  useMyHook.types.ts           # types only
-
-.atelier/
-  mocks/
-    YourComponent.frame.tsx    # frame file — meta + states; auto-discovered
-    actions/
-      product.ts               # server action interceptor (auto-aliased)
-    hooks/
-      useArenaSearch.ts        # hook interceptor (auto-aliased)
-  registry/
-    index.ts                   # assembles registry via import.meta.glob
-    types.ts                   # StateKey, ComponentState, MockMeta, RegistryEntry, Outcome, SceneNode
-  scenes/
-    AddStudent.scene.tsx       # example scene — meta + SceneDef (nodes, outcomes, gate/fallback)
-  PreviewShell.tsx             # sidebar + canvas + state switcher
-  StateBar.tsx                 # state tab bar
-  ComponentCanvas.tsx          # renders active state
-  CanvasGrid.tsx               # grid view of all components
-  main.tsx                     # Vite entry point
-  index.html                   # Vite HTML entry
-  tsconfig.json                # Vite/preview tsconfig (includes mock alias paths)
-
-vite.atelier.config.ts         # Vite config — alias interception + dev server
-
-qa/
-  pending/                     # agent writes bug case files here after every fix
-  verified/                    # promoted once fix is confirmed
-  archived/                    # closed cases
-```
-
-## Key constraints
-
-- All UI state (`activeIndex`, `activeState`, `mode`) lives in `PreviewShell` via `useState` — no external state library.
-- The registry is assembled at Vite startup via `import.meta.glob` — adding a frame file is all that's required.
-- `.atelier/` is excluded from the Next.js TypeScript compilation — zero Atelier code leaks into the production bundle.
-
