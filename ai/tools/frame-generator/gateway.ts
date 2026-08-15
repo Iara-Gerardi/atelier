@@ -1,32 +1,11 @@
-import { loadEnvConfig } from '@next/env'
-import { generateText } from 'ai'
-import { createWrappedGatewayModel } from '../lm'
+import { generateAtelierText } from '../provider'
 
-let envLoaded = false
-
-function ensureProjectEnvLoaded(): void {
-  if (envLoaded) return
-  envLoaded = true
-  loadEnvConfig(process.cwd())
-}
-
-function ensureApiKeyPresent(): void {
-  ensureProjectEnvLoaded()
-  const hasGatewayKey = Boolean(process.env.AI_GATEWAY_API_KEY)
-  const hasOpenAiKey = Boolean(process.env.OPENAI_API_KEY)
-
-  if (!hasGatewayKey && !hasOpenAiKey) {
-    throw new Error(
-      'Missing API key. Set AI_GATEWAY_API_KEY (or OPENAI_API_KEY) in your environment or .env file.'
-    )
-  }
-}
-
-export async function generateFrameTextWithGateway(prompt: string, model: string): Promise<string> {
-  ensureApiKeyPresent()
-  const result = await generateText({
-    model: createWrappedGatewayModel(model),
-    prompt,
-  })
-  return result.text
+/**
+ * Thin wrapper kept for backwards compatibility. Provider selection, API-key
+ * validation, and model construction all live in `ai/tools/provider.ts`, so the
+ * frame generator works with the Vercel AI Gateway or any direct provider the
+ * developer configured via `npm run atelier:setup`.
+ */
+export async function generateFrameTextWithGateway(prompt: string, model?: string): Promise<string> {
+  return generateAtelierText({ prompt, model })
 }

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { generateText } from 'ai'
 import { generateFrameTool } from './generate-frame'
+import { generateSceneTool } from './generate-scene'
 import { createWrappedGatewayModel } from './lm'
 
 const model = createWrappedGatewayModel('openai/gpt-4.1-mini')
@@ -17,4 +18,4 @@ export const generateTextTool = {
   },
 }
 
-export { generateFrameTool }
+export { generateFrameTool, generateSceneTool }

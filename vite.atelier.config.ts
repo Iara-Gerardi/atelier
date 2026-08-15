@@ -1,32 +1,67 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/postcss'
-import path from 'path'
-import { readdirSync } from 'fs'
+import path from 'node:path'
 import type { Plugin } from 'vite'
 import type { RegistryEntry } from './.atelier/registry/types'
+import { buildAliases, resolveConfig, writeTsconfigPaths } from './.atelier/config'
+import userConfig from './atelier.config'
+
+const root = __dirname
+const atelier = resolveConfig(userConfig, root)
+
+const SHIMS_DIR = path.resolve(root, '.atelier/shims')
+const STYLES_ALIAS = 'atelier:styles'
+const TSCONFIG_PATH = path.resolve(root, '.atelier/tsconfig.json')
 
 /**
- * Auto-scan .atelier/mocks/{category}/ and build one regex alias per file.
- * The regex matches the module name at any import depth and with any prefix
- * (@/, ../, ../../, etc.), so no per-file Vite config is needed.
- * Adding a new mock file in the right folder is all that's required.
- *
- * `category` may be a nested path (e.g. 'components/ui') — the regex still
- * matches `@/components/ui/Button` etc. correctly because slashes are
- * preserved verbatim.
+ * Aliases for the built-in Next.js module shims. Only registered when
+ * `nextShims` is enabled. Each maps the bare module specifier to a shim file
+ * so client components importing them render in the Vite preview.
  */
-function buildMockAliases(category: string) {
-  const dir = path.resolve(__dirname, `.atelier/mocks/${category}`)
-  return readdirSync(dir)
-    .filter(f => f.endsWith('.ts') || f.endsWith('.tsx'))
-    .map(f => {
-      const name = f.replace(/\.tsx?$/, '')
-      return {
-        find: new RegExp(`^.*/${category}/${name}$`),
-        replacement: path.resolve(dir, f),
+function shimAliases() {
+  return [
+    { find: /^next\/navigation$/, replacement: path.join(SHIMS_DIR, 'next-navigation.tsx') },
+    { find: /^next\/link$/, replacement: path.join(SHIMS_DIR, 'next-link.tsx') },
+    { find: /^next\/image$/, replacement: path.join(SHIMS_DIR, 'next-image.tsx') },
+    { find: /^next\/headers$/, replacement: path.join(SHIMS_DIR, 'next-headers.ts') },
+  ]
+}
+
+/**
+ * Expose `process.env.<PREFIX>*` (from `.env` / `.env.local`) and
+ * `process.env.NODE_ENV` to the preview so modules that read
+ * `process.env.NEXT_PUBLIC_*` (e.g. a zod-validated `env.ts`) don't crash
+ * under Vite, which normally only populates `import.meta.env`.
+ */
+function envDefine(mode: string): Record<string, string> {
+  const define: Record<string, string> = {
+    'process.env.NODE_ENV': JSON.stringify(mode === 'production' ? 'production' : 'development'),
+  }
+  for (const prefix of atelier.envPrefixes) {
+    const env = loadEnv(mode, root, prefix)
+    for (const [key, value] of Object.entries(env)) {
+      define[`process.env.${key}`] = JSON.stringify(value)
+    }
+  }
+  return define
+}
+
+/**
+ * Keep `.atelier/tsconfig.json` `paths` in sync with the mirrored mocks on
+ * every preview start, so `tsc` resolves imports exactly like the preview.
+ */
+function tsconfigSyncPlugin(): Plugin {
+  return {
+    name: 'atelier-tsconfig-sync',
+    configResolved() {
+      try {
+        writeTsconfigPaths(atelier, TSCONFIG_PATH)
+      } catch (err) {
+        console.warn('[atelier] could not sync tsconfig paths:', err)
       }
-    })
+    },
+  }
 }
 
 function registryApiPlugin(): Plugin {
@@ -59,23 +94,27 @@ function registryApiPlugin(): Plugin {
   }
 }
 
-export default defineConfig({
-  plugins: [react(), registryApiPlugin()],
+export default defineConfig(({ mode }) => ({
+  plugins: [react(), tsconfigSyncPlugin(), registryApiPlugin()],
   css: {
     postcss: {
       plugins: [tailwindcss],
     },
   },
+  define: envDefine(mode),
   resolve: {
     alias: [
-      ...buildMockAliases('hooks'),
-      ...buildMockAliases('actions'),
-      ...buildMockAliases('components/ui'),
-      { find: '@', replacement: path.resolve(__dirname, '.') },
+      // Global stylesheet, imported by main.tsx as `atelier:styles`.
+      ...(atelier.globalCss ? [{ find: STYLES_ALIAS, replacement: atelier.globalCss }] : []),
+      // Built-in Next.js shims (before the mirrored mocks / prefix aliases).
+      ...(atelier.nextShims ? shimAliases() : []),
+      // Mirrored mocks (regex, first-match wins) then alias prefixes.
+      ...buildAliases(atelier),
     ],
   },
   root: '.',
   server: {
+    port: atelier.port,
     open: '/.atelier/index.html',
   },
-})
+}))

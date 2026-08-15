@@ -2,6 +2,19 @@
 
 Use these templates verbatim when creating or updating files in `features/<slug>/`. Fill in every placeholder — do not leave template text in the output.
 
+## Size budgets (hard limits)
+
+Docs must stay short so devs read them and agents spend few tokens. Do not exceed:
+
+| File | Budget |
+|------|--------|
+| `index.md` | ≤ 40 lines |
+| `flow.md` | ≤ 30 lines (one diagram + numbered legend) |
+| `frames.md` | ≤ 15 lines (path list only) |
+| `scenes.md` | ≤ 15 lines (path list only) |
+
+Prefer tables and bullets over prose; never restate code. If a file wants to grow past budget, split the feature rather than bloat the file. Drop optional sections (e.g. "Third-party notes", empty subsections) instead of padding them.
+
 ---
 
 ## `index.md`

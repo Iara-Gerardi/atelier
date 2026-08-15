@@ -3,6 +3,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { chromium, type Browser, type Page } from 'playwright'
 import { z } from 'zod'
 import { generateFrameInputSchema, runGenerateFrame } from '../../ai/tools/generate-frame'
+import { generateSceneInputSchema, runGenerateScene } from '../../ai/tools/generate-scene'
 
 const ATELIER_URL = process.env.ATELIER_URL ?? 'http://localhost:5173'
 const REGISTRY_URL = `${ATELIER_URL}/api/registry`
@@ -156,7 +157,7 @@ server.tool(
 
 server.tool(
   'generate_frame',
-  'Generate a strongly-typed Atelier frame from one source component file. Use mode=preview to inspect output without writing files, or mode=write to create/update the frame under .atelier/frames/.',
+  'Generate a strongly-typed Atelier frame from one source component file. Use mode=preview to inspect output without writing files, or mode=write to create/update the frame under .atelier/mocks/.',
   {
     componentPath: generateFrameInputSchema.shape.componentPath,
     componentName: generateFrameInputSchema.shape.componentName,
@@ -191,7 +192,7 @@ server.tool(
 
 server.tool(
   'generate_frame_from_chat',
-  'Chat-friendly wrapper for generate_frame that accepts a component name and infers components/<name>.tsx. Use mode=preview to inspect output or mode=write to create/update a frame under .atelier/frames/.',
+  'Chat-friendly wrapper for generate_frame that accepts a component name and infers components/<name>.tsx. Use mode=preview to inspect output or mode=write to create/update a frame under .atelier/mocks/.',
   {
     componentName: z
       .string()
@@ -229,6 +230,42 @@ server.tool(
       result.mode === 'preview'
         ? `${header}${result.frameSource}`
         : `${header}Frame file written successfully.`
+    return { content: [{ type: 'text', text }] }
+  }
+)
+
+// generate_scene ------------------------------------------------------------
+
+server.tool(
+  'generate_scene',
+  'Generate a strongly-typed Atelier scene that wires existing frames under .atelier/mocks/ into a user flow. Outcomes are frame-to-frame transitions only. Use mode=preview to inspect output without writing, or mode=write to create/update the scene under .atelier/scenes/.',
+  {
+    name: generateSceneInputSchema.shape.name,
+    description: generateSceneInputSchema.shape.description,
+    category: generateSceneInputSchema.shape.category,
+    tags: generateSceneInputSchema.shape.tags,
+    entryFrame: generateSceneInputSchema.shape.entryFrame,
+    entryState: generateSceneInputSchema.shape.entryState,
+    frames: generateSceneInputSchema.shape.frames,
+    mode: generateSceneInputSchema.shape.mode,
+    outputPath: generateSceneInputSchema.shape.outputPath,
+    model: generateSceneInputSchema.shape.model,
+  },
+  async (input) => {
+    const result = await runGenerateScene(input, { rootDir: process.cwd(), calledFrom: 'mcp' })
+    const header = [
+      `Mode: ${result.mode}`,
+      `Output path: ${result.outputPath}`,
+      `Scene name: ${result.sceneName}`,
+      `Model: ${result.model}`,
+      '',
+    ].join('\n')
+
+    const text =
+      result.mode === 'preview'
+        ? `${header}${result.sceneSource}`
+        : `${header}Scene file written successfully.`
+
     return { content: [{ type: 'text', text }] }
   }
 )

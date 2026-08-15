@@ -61,8 +61,21 @@ export interface Outcome {
    * Required. Plain-language description of the user action that fires this
    * outcome (e.g. "Click the Submit button"). Used by agents to generate the
    * action step in "How to reach this state" sections of qa cases.
+   *
+   * The literal `'auto'` marks an outcome that is **not** user-triggered: the
+   * frame itself dispatches it (via `useSceneOutcome().dispatch`) when some
+   * mocked async result settles — e.g. a loader resolving to success/error.
+   * Auto outcomes are hidden from the mocked-Button dropdown.
    */
-  trigger: string
+  trigger: string | 'auto'
+  /**
+   * Optional route this outcome corresponds to. When set, a component's real
+   * `router.push(href)` / `router.replace(href)` (via the `next/navigation`
+   * shim) or a `<Link href>` click dispatches this outcome — so scene
+   * transitions can be driven by ordinary navigation code, not just the
+   * mocked Button. Matched exactly first, then by prefix.
+   */
+  href?: string
   /**
    * Exactly one outcome per node should be marked default. The split-button's
    * primary face fires this outcome on click. If none is marked, the first

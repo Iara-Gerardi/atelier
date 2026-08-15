@@ -7,8 +7,11 @@
     "build": "next build",
     "start": "next start",
     "preview": "vite --config vite.atelier.config.ts",
+    "typecheck": "tsc --noEmit -p .atelier/tsconfig.json",
     "mcp:atelier": "tsx scripts/atelier-mcp/index.ts",
-    "gen-frame": "tsx scripts/generate-frame.ts"
+    "atelier:setup": "tsx scripts/atelier-setup.ts",
+    "gen-frame": "tsx scripts/generate-frame.ts",
+    "gen-scene": "tsx scripts/generate-scene.ts"
   },
   "dependencies": {
     "@ai-sdk/devtools": "^0.0.18",

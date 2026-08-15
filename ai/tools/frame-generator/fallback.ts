@@ -13,7 +13,13 @@ export function shouldUseTemplateFallback(error: unknown): boolean {
     message.includes('insufficient_quota') ||
     message.includes('(401)') ||
     message.includes('(403)') ||
-    message.includes('(429)')
+    message.includes('(429)') ||
+    // Model access / subscription-tier restrictions: degrade to the deterministic
+    // template so Atelier stays usable on any AI plan.
+    message.includes('do not have access') ||
+    message.includes('does not have access') ||
+    message.includes('model_not_found') ||
+    message.includes('Free tier')
   )
 }
 

@@ -110,7 +110,13 @@ export function Button(props: ButtonProps) {
     return <RealButton {...props} />;
   }
 
-  const { outcomes, dispatch } = action;
+  const { dispatch } = action;
+  // `auto` outcomes are dispatched by the frame itself (e.g. when a mocked
+  // promise settles), never by a click — keep them out of the menu.
+  const outcomes = action.outcomes.filter((o) => o.trigger !== "auto");
+  if (outcomes.length === 0) {
+    return <RealButton {...props} />;
+  }
   const primary = pickDefault(outcomes);
   if (!primary) return <RealButton {...props} />;
 

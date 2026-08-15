@@ -44,10 +44,10 @@ export function resolveOutputPath(
   outputPath?: string
 ): string {
   const projectRoot = path.resolve(rootDir)
-  const framesRoot = path.resolve(projectRoot, '.atelier', 'frames')
-  const fallback = path.resolve(framesRoot, `${componentName}.frame.tsx`)
+  const mocksRoot = path.resolve(projectRoot, '.atelier', 'mocks')
+  const fallback = path.resolve(mocksRoot, `${componentName}.frame.tsx`)
   const resolved = outputPath ? path.resolve(projectRoot, outputPath) : fallback
 
-  ensureInside(framesRoot, resolved, 'outputPath')
+  ensureInside(mocksRoot, resolved, 'outputPath')
   return resolved
 }

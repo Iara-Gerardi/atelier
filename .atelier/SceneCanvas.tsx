@@ -15,11 +15,25 @@ interface SceneCanvasProps {
   onDispatch: (outcomeId: string) => void
   onStateChange: (state: StateKey) => void
   onRestart: () => void
+  /** Navigate the scene to a node (clears any outcome override). */
+  onNavigateNode: (nodeId: string) => void
 }
 
-function NodeBadge({ nodeId }: { nodeId: string }) {
+function NodeBadge({ nodeId, onClick }: { nodeId: string; onClick?: () => void }) {
+  const cls = 'rounded bg-gray-100 px-1.5 py-0.5 text-[11px] text-gray-700'
+  if (onClick) {
+    return (
+      <button
+        onClick={onClick}
+        title={`Go to node ${nodeId}`}
+        className={`${cls} cursor-pointer font-mono transition-colors hover:bg-indigo-100 hover:text-indigo-700`}
+      >
+        {nodeId}
+      </button>
+    )
+  }
   return (
-    <code className="rounded bg-gray-100 px-1.5 py-0.5 text-[11px] text-gray-700">{nodeId}</code>
+    <code className={cls}>{nodeId}</code>
   )
 }
 
@@ -58,6 +72,7 @@ export default function SceneCanvas({
   onDispatch,
   onStateChange,
   onRestart,
+  onNavigateNode,
 }: SceneCanvasProps) {
   const intendedNode = scene.scene.nodes[currentNodeId]
 
@@ -154,9 +169,25 @@ export default function SceneCanvas({
   // v3. When the gate failed we expose no outcomes at all (the user is at the
   // fallback, no real action is in scope).
   const outcomesForContext = redirected ? [] : visibleOutcomes(intendedNode, frameName)
+
+  /**
+   * Dispatch by route: used by the `next/navigation` and `next/link` shims so
+   * a component's real `router.push('/x')` / `<Link href="/x">` drives the
+   * scene. Matches an in-scope outcome's `href` exactly first, then by prefix.
+   */
+  function dispatchByHref(target: string): boolean {
+    const exact = outcomesForContext.find((o) => o.href === target)
+    const match =
+      exact ?? outcomesForContext.find((o) => o.href && target.startsWith(o.href))
+    if (!match) return false
+    onDispatch(match.id)
+    return true
+  }
+
   const action: SceneActionContextValue = {
     outcomes: outcomesForContext,
     dispatch: onDispatch,
+    dispatchByHref,
   }
 
   const atInitial =
@@ -166,11 +197,11 @@ export default function SceneCanvas({
     <div className="flex flex-1 flex-col overflow-hidden">
       <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50 px-4 py-1.5 text-[11px] text-gray-500">
         <span className="font-semibold uppercase tracking-wider text-gray-400">Node</span>
-        <NodeBadge nodeId={currentNodeId} />
+        <NodeBadge nodeId={currentNodeId} onClick={() => onNavigateNode(currentNodeId)} />
         {redirected && (
           <>
             <span className="text-gray-300">→</span>
-            <NodeBadge nodeId={renderedNodeId} />
+            <NodeBadge nodeId={renderedNodeId} onClick={() => onNavigateNode(renderedNodeId)} />
             <span className="ml-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
               gate failed
             </span>

@@ -1,6 +1,8 @@
 import path from 'node:path'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { resolveDefaultModel } from '../provider'
 import { generateFrameTextWithGateway } from './gateway'
+import { buildFallbackFrameSource, shouldUseTemplateFallback } from './fallback'
 import {
   buildComponentImportStatement,
   inferPrimaryStateAxis,
@@ -19,6 +21,7 @@ export async function runGenerateFrame(
   const input = generateFrameInputSchema.parse(rawInput)
   const rootDir = path.resolve(options.rootDir ?? process.cwd())
   const calledFrom = options.calledFrom ?? 'unknown'
+  const model = input.model ?? resolveDefaultModel(rootDir)
   const componentAbsolutePath = resolveComponentPath(rootDir, input.componentPath)
   const componentSource = await readFile(componentAbsolutePath, 'utf8')
   const componentName =
@@ -40,7 +43,7 @@ export async function runGenerateFrame(
     componentPath: input.componentPath,
     componentName,
     mode: input.mode,
-    model: input.model,
+    model,
     stateHintsProvided: input.stateHints,
     inferredStateHints: effectiveStateHints,
     primaryStateAxis: primaryStateAxis?.propName ?? null,
@@ -58,15 +61,34 @@ export async function runGenerateFrame(
     variants: input.variants,
   })
 
-  const generatedText = await generateFrameTextWithGateway(prompt, input.model)
-  console.log('[generate-frame] strategy', 'ai')
-  const frameSource = normalizeFrameSource(generatedText, {
-    componentName,
-    componentImportStatement,
-    category: input.category,
-    tags: input.tags,
-    variants: input.variants,
-  })
+  let frameSource: string
+  try {
+    const generatedText = await generateFrameTextWithGateway(prompt, model)
+    console.log('[generate-frame] strategy', 'ai')
+    frameSource = normalizeFrameSource(generatedText, {
+      componentName,
+      componentImportStatement,
+      category: input.category,
+      tags: input.tags,
+      variants: input.variants,
+    })
+  } catch (error) {
+    if (!shouldUseTemplateFallback(error)) throw error
+    console.log('[generate-frame] strategy', 'fallback')
+    frameSource = buildFallbackFrameSource({
+      componentName,
+      componentImportStatement,
+      category: input.category,
+      tags: input.tags,
+      stateHints: effectiveStateHints,
+      variants: input.variants,
+      stateAxisProp: primaryStateAxis?.propName,
+      requiredPrimitiveProps: requiredPrimitiveProps.map((prop) => ({
+        name: prop.name,
+        type: prop.type,
+      })),
+    })
+  }
 
   const outputAbsolutePath = resolveOutputPath(rootDir, componentName, input.outputPath)
   if (input.mode === 'write') {
@@ -80,6 +102,6 @@ export async function runGenerateFrame(
     frameSource,
     componentPath: toPosix(path.relative(rootDir, componentAbsolutePath)),
     componentImportPath,
-    model: input.model,
+    model,
   }
 }

@@ -101,6 +101,22 @@ For QA test runs, invoke the `qa-agent` (`.github/agents/qa-agent.agent.md`).
 
 ---
 
+## Creator agents & AI provider
+
+Three agents automate the four pillars for a newly prompted feature. They are thin instructions over the MCP server's tools (`generate_frame`, `generate_scene`, `list_stories`, …), so they behave identically on any host assistant:
+
+| Agent | Use when | Produces |
+|-------|----------|----------|
+| `frame-creator` (`.github/agents/frame-creator.agent.md`) | one component needs a frame | `.atelier/mocks/<Component>.frame.tsx` |
+| `scene-creator` (`.github/agents/scene-creator.agent.md`) | existing frames need wiring into a multi-screen flow | `.atelier/scenes/<Name>.scene.tsx` + scene-coverage qa cases |
+| `feature-builder` (`.github/agents/feature-builder.agent.md`) | a whole feature was added/changed | frames → scene → feature docs → qa, by delegation |
+
+**AI provider is configurable and not assumed.** Run `npm run atelier:setup` once to pick a provider/model/key (written to `.atelier/ai.config.json`); the Vercel AI Gateway is the universal default. `npm run gen-frame` and `npm run gen-scene` honor it, and both fall back to a deterministic template if the key is missing or the model is inaccessible. Never hardcode a provider or model in agent files.
+
+**Host portability.** The canonical agent files live in `.github/agents/` for Copilot. The same content is portable to Claude Code (`.claude/agents/`) and Cursor (`.cursor/`); see `docs/portability.md` for the per-tool folder mapping and the MCP wiring that makes every host behave the same.
+
+---
+
 ## Checklist for any new component
 
 - [ ] Component created in `components/` — follow folder/nesting rules in the skill's `app-architecture.md`

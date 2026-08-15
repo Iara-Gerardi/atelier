@@ -16,6 +16,14 @@ export interface SceneActionContextValue {
    * outcome's `set` to variants and navigates to its (frame, state).
    */
   dispatch: (outcomeId: string) => void
+  /**
+   * Dispatch the outcome whose `href` matches `target` (exact match first,
+   * then prefix). Used by the `next/navigation` and `next/link` shims so a
+   * component's real `router.push('/x')` / `<Link href="/x">` drives the scene
+   * without importing anything Atelier-specific. Returns `true` when an
+   * outcome matched and was dispatched.
+   */
+  dispatchByHref: (target: string) => boolean
 }
 
 export const SceneActionContext = createContext<SceneActionContextValue | null>(null)
@@ -28,3 +36,10 @@ export const SceneActionContext = createContext<SceneActionContextValue | null>(
 export function useSceneAction(): SceneActionContextValue | null {
   return useContext(SceneActionContext)
 }
+
+/**
+ * Public alias of {@link useSceneAction} for component/shim code that wants to
+ * drive scene outcomes directly (e.g. dispatching an `auto` outcome from an
+ * effect when a mocked promise resolves, or matching a navigation `href`).
+ */
+export const useSceneOutcome = useSceneAction

@@ -12,6 +12,7 @@ import ComponentCanvas from './ComponentCanvas'
 import CanvasGrid from './CanvasGrid'
 import VariantBar from './VariantBar'
 import SceneCanvas from './SceneCanvas'
+import SceneGraph from './SceneGraph'
 
 type Mode = 'frame' | 'scene' | 'canvas'
 
@@ -155,6 +156,18 @@ function SingleIcon() {
   )
 }
 
+function GraphIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="3" cy="8" r="2" fill="currentColor" />
+      <circle cx="13" cy="3" r="2" fill="currentColor" />
+      <circle cx="13" cy="13" r="2" fill="currentColor" />
+      <line x1="4.7" y1="7" x2="11.3" y2="3.9" stroke="currentColor" strokeWidth="1.3" />
+      <line x1="4.7" y1="9" x2="11.3" y2="12.1" stroke="currentColor" strokeWidth="1.3" />
+    </svg>
+  )
+}
+
 /**
  * Variants the scene cares about = union of `meta.variants` across every
  * frame referenced by any node (entry or outcome target). Frames that don't
@@ -182,6 +195,7 @@ export default function PreviewShell() {
   const [variants, setVariants] = useState<VariantValues>(() => resolveInitialVariants())
   const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set())
   const [activeTags, setActiveTags] = useState<Set<string>>(new Set())
+  const [sceneGraphOpen, setSceneGraphOpen] = useState(false)
 
   useEffect(() => {
     const params = new URLSearchParams()
@@ -236,6 +250,7 @@ export default function PreviewShell() {
   }
 
   function selectFrame(idx: number) {
+    setSceneGraphOpen(false)
     const stateKey = Object.keys(registry[idx].states)[0]
     setSelection((prev) => ({
       ...prev,
@@ -265,6 +280,16 @@ export default function PreviewShell() {
 
   function setMode(mode: Mode) {
     setSelection((prev) => ({ ...prev, mode }))
+  }
+
+  function navigateNode(nodeId: string) {
+    setSceneGraphOpen(false)
+    setSelection((prev) => ({
+      ...prev,
+      nodeId,
+      sceneFrame: undefined,
+      sceneState: undefined,
+    }))
   }
 
   function handleDispatch(outcomeId: string) {
@@ -401,13 +426,23 @@ export default function PreviewShell() {
         {/* Top bar */}
         <div className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3">
           <span className="font-medium text-gray-800">{topBarTitle}</span>
-          <button
-            onClick={() => setMode(selection.mode === 'canvas' ? 'frame' : 'canvas')}
-            title={selection.mode === 'canvas' ? 'Back to single view' : 'Open canvas view'}
-            className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
-          >
-            {selection.mode === 'canvas' ? <SingleIcon /> : <GridIcon />}
-          </button>
+          {selection.mode === 'scene' ? (
+            <button
+              onClick={() => setSceneGraphOpen((o) => !o)}
+              title={sceneGraphOpen ? 'Back to scene preview' : 'Show scene paths graph'}
+              className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            >
+              {sceneGraphOpen ? <SingleIcon /> : <GraphIcon />}
+            </button>
+          ) : (
+            <button
+              onClick={() => setMode(selection.mode === 'canvas' ? 'frame' : 'canvas')}
+              title={selection.mode === 'canvas' ? 'Back to single view' : 'Open canvas view'}
+              className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            >
+              {selection.mode === 'canvas' ? <SingleIcon /> : <GridIcon />}
+            </button>
+          )}
         </div>
 
         {/* Variant bar — only when at least one axis applies to the active frame/scene */}
@@ -434,7 +469,15 @@ export default function PreviewShell() {
           </>
         )}
 
-        {selection.mode === 'scene' && activeScene && (
+        {selection.mode === 'scene' && activeScene && sceneGraphOpen && (
+          <SceneGraph
+            scene={activeScene}
+            variants={variants}
+            onNavigateNode={navigateNode}
+          />
+        )}
+
+        {selection.mode === 'scene' && activeScene && !sceneGraphOpen && (
           <SceneCanvas
             scene={activeScene}
             currentNodeId={selection.nodeId}
@@ -444,6 +487,7 @@ export default function PreviewShell() {
             onDispatch={handleDispatch}
             onStateChange={handleSceneStateChange}
             onRestart={restartScene}
+            onNavigateNode={navigateNode}
           />
         )}
 

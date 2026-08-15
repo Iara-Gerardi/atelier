@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
-export const DEFAULT_MODEL = process.env.AI_GATEWAY_MODEL ?? 'openai/gpt-5.5'
+export const DEFAULT_MODEL =
+  process.env.ATELIER_AI_MODEL ?? process.env.AI_GATEWAY_MODEL ?? 'openai/gpt-5.5'
 
 export const generateFrameInputSchema = z.object({
   componentPath: z.string().min(1).describe('Path to a component source file under components/.'),
@@ -24,8 +25,12 @@ export const generateFrameInputSchema = z.object({
     .string()
     .min(1)
     .optional()
-    .describe('Optional output path; defaults to .atelier/frames/<ComponentName>.frame.tsx.'),
-  model: z.string().min(1).default(DEFAULT_MODEL),
+    .describe('Optional output path; defaults to .atelier/mocks/<ComponentName>.frame.tsx.'),
+  model: z
+    .string()
+    .min(1)
+    .optional()
+    .describe('Optional model id; defaults to the provider model from .atelier/ai.config.json.'),
 })
 
 export type GenerateFrameInput = z.input<typeof generateFrameInputSchema>
