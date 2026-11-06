@@ -11,18 +11,25 @@
     "mcp:atelier": "tsx scripts/atelier-mcp/index.ts",
     "atelier:setup": "tsx scripts/atelier-setup.ts",
     "gen-frame": "tsx scripts/generate-frame.ts",
-    "gen-scene": "tsx scripts/generate-scene.ts"
+    "gen-scene": "tsx scripts/generate-scene.ts",
+    "gen-states": "tsx scripts/generate-states.ts",
+    "atelier:scan": "node --import tsx scripts/atelier-scan.ts",
+    "atelier:watch": "node --import tsx scripts/atelier-scan.ts --watch",
+    "atelier:catalog": "node --import tsx scripts/atelier-catalog.ts",
+    "atelier:coverage": "node --import tsx scripts/atelier-coverage.ts",
+    "test:graph": "vitest run ai/tools/project-graph"
   },
   "dependencies": {
-    "@ai-sdk/devtools": "^0.0.18",
+    "@ai-sdk/devtools": "^1.0.40",
     "@opentelemetry/api-logs": "^0.218.0",
     "@opentelemetry/instrumentation": "^0.218.0",
     "@opentelemetry/sdk-logs": "^0.218.0",
     "@vercel/otel": "^2.1.2",
-    "ai": "^6.0.188",
+    "ai": "^7.0.137",
     "next": "^15.5.18",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",

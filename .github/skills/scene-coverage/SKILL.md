@@ -1,6 +1,6 @@
 ---
 name: scene-coverage
-description: "Use when: a scene file in .atelier/scenes/ is created or modified, when documenting a feature whose scenes.md is non-empty, or when extending qa coverage around a bugfix that touches a component referenced by a scene. Translates a scene's nodes + outcomes into qa case files under qa/pending/."
+description: "Use when: a scene file in .atelier/scenes/ is created or modified, a feature contract associates a scene needing coverage, or a bugfix touches a component referenced by a scene. Translates nodes and outcomes into QA cases under qa/pending/."
 ---
 
 # Scene Coverage Skill
@@ -16,7 +16,7 @@ You do this by reading the scene file, resolving everything it references, enume
 Activate when:
 
 - A scene file under `.atelier/scenes/` is **created or modified** in this session.
-- The `feature-analyst` skill writes or updates a `features/<slug>/scenes.md` that lists at least one scene.
+- The `feature-analyst` skill newly associates a scene needing coverage through `scenes` in `features/<slug>/index.md`.
 - The `bugfix` skill identifies that the affected component is referenced by a scene (`nodes[*].frame` matches the component's frame name, or appears in any `outcome.frame`).
 - The user explicitly asks to "generate qa cases for scene X" or "refresh scene coverage".
 
@@ -24,6 +24,7 @@ Do **not** activate when:
 
 - A frame is changed but no scene references it.
 - A scene's only change is a `description` field or a comment.
+- A feature contract migration only moves an unchanged scene association into frontmatter.
 - The user is mid-edit on the scene file (wait until the change settles).
 
 ---
@@ -35,7 +36,7 @@ You will be invoked with one of:
 | Input | Behavior |
 |-------|----------|
 | A scene file path (`.atelier/scenes/AddStudent.scene.tsx`) | Cover that single scene. |
-| A `features/<slug>/scenes.md` file | Cover every scene listed inside. |
+| A `features/<slug>/index.md` contract | Cover every scene listed in its YAML `scenes` field. |
 | A component file path | Resolve to the frame at `.atelier/mocks/<ComponentName>.frame.tsx`, find scenes whose `nodes[*].frame` or `outcomes[*].frame` matches, cover each. |
 
 ---

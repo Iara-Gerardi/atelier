@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+/.atelier/generated/
+/.atelier/coverage/
 
 # next.js
 /.next/

@@ -30,7 +30,7 @@ Load these for detailed patterns before writing any code:
 - [ ] Mock only covers actions/hooks used by a component that has a frame — not every export in the codebase
 - [ ] Mock imports types from `.types.ts` only — never from the real implementation file
 - [ ] Mock's exported function name and signature match the real action/hook so the Vite alias is transparent
-- [ ] States cover every UI-changing conditional in the component source — one state key per `if`/ternary/`&&` branch, no more, no less
+- [ ] States describe reachable, meaningfully different renders or interactions. Use render-branch evidence to find gaps; branches and state keys are not one-to-one. Run `npm run atelier:coverage` for execution evidence and add assertions for expected visible results.
 - [ ] Frame file contains only `meta` and `states` — no helper functions, no constants, no additional exports
 - [ ] Render functions are logic-less: only setter calls + JSX return; any logic variation that changes the UI is a separate state
 - [ ] If the component reacts to a global variant axis (e.g. `auth`), declare it in `meta.variants` and consume `({ variants })` in `render`

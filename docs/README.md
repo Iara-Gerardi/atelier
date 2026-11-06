@@ -8,6 +8,7 @@ Short, agent- and human-readable notes about why Atelier exists, what is built, 
 | [state.md](./state.md) | What already exists in the repo today (inventory + gaps). |
 | [conventions.md](./conventions.md) | Dev preferences, file structure, and the strict doc size budgets. |
 | [portability.md](./portability.md) | How Atelier drops into other projects: npm-package plan, AI-provider setup, per-tool agent placement. |
+| [complex-app-readiness.md](./complex-app-readiness.md) | Gaps found when applying Atelier to a stateful, multi-route front end, with generic cases and priorities. |
 
 ## Related docs (not in this folder)
 

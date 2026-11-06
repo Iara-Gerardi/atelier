@@ -1,78 +1,33 @@
 # Features
 
-This folder contains architectural documentation for each feature in the app. It is maintained by the agent — do not edit manually unless you are correcting factual errors.
+Each capability has one contract at `features/<slug>/index.md`. The catalog records intent and entry points; Atelier's directed graph derives which frames and dependencies are used by each feature, including the paths that justify those labels. Shared frames may belong to several features.
 
----
+Required YAML frontmatter:
 
-## Folder structure
-
-```
-features/
-  <feature-slug>/
-    index.md    — summary, status, file references
-    flow.md     — mermaid user-flow diagram + numbered interaction legend
-    frames.md   — list of Atelier frame files that cover this feature
-    scenes.md   — list of Atelier scene files that cover this feature
+```yaml
+slug: home
+name: Home
+goal: Browse a paginated product grid from the landing page.
+entries:
+  - file: app/page.tsx
+    symbol: Home
 ```
 
-One folder per feature. The slug is kebab-case and matches the feature's primary component name when possible (e.g. `example-search-tab`, `home-page`).
+The slug is a stable kebab-case ID matching its directory. Each entry has a repository-relative `file` and optional `symbol` naming a declaration or export. Without a symbol, the entry covers the whole file. Use a component entry for a capability inside a larger page, or a scene entry for a preview-only flow.
 
----
+Optional fields:
 
-## File roles
+- `exclude`: entries shaped like `{ file, symbol? }` that bound graph traversal.
+- `scenes`: existing `.atelier/scenes/*.scene.tsx` paths describing this feature's flow.
 
-### `index.md`
+A short scope paragraph may follow the frontmatter. The schema is defined in `ai/tools/project-graph/catalog.ts`; no additional metadata fields are accepted. Frame lists, dependency inventories, and duplicate flow diagrams are not maintained manually. Scene files remain the canonical screen-flow specification; imports do not imply navigation.
 
-The entry point for the feature. Contains:
+## Maintaining the catalog
 
-- **Front-matter**: name, slug, status, created date, tags
-- **Summary**: one-paragraph description of what the feature does and why it exists
-- **Feature definition**: goal, actor, entry points, and clear in-scope / out-of-scope boundaries
-- **Entry points / pages**: routes/pages/layout touchpoints where the feature starts
-- **File references**: links to components, actions, hooks, utilities, and other supporting files that belong to this feature
-- **Integrations**: evidence-backed links to other features this one composes with or depends on
-- **Traceability checklist**: key summary claims mapped to concrete source file evidence
-- **Links** to `flow.md`, `frames.md`, and `scenes.md`
+Use `.github/skills/feature-analyst/SKILL.md` when adding a capability or changing its goal, entry points, or user flow. Update the contract in the same session. Renames preserve the feature ID and update its references; styling or extra previews for existing behavior do not establish a new feature.
 
-### `flow.md`
+Initial discovery runs through `npm run atelier:catalog -- --preview` and `--write`, using the configured generative provider and Jev review. After bootstrap, agents maintain the existing catalog incrementally rather than rediscovering every feature.
 
-A Mermaid `sequenceDiagram` that maps the user journey and system interactions.
+Run `npm run atelier:scan` after functional changes and review the affected artifacts and coverage. `npm run atelier:watch` refreshes local reports as files change. `npm run atelier:scan -- --check` checks drift and errors without updating the baseline. Unclassified entry points remain findings until their intent is documented.
 
-**Pillars** (participants) are always:
-
-| Participant | Meaning |
-|-------------|---------|
-| `User` | The person using the UI |
-| `Frontend` | React components, hooks, client-side logic |
-| `Backend` | Server actions, API routes, data layer |
-
-Third-party providers (e.g. external APIs, auth services, search engines) are **not** modelled as participants in the diagram. Instead they are described in a "Third-party notes" section below the diagram.
-
-Each arrow in the diagram carries a number (`1`, `2`, `3`, …). A numbered legend below the diagram explains each step in plain language.
-
-### `frames.md`
-
-A flat list of `.atelier/mocks/*.frame.tsx` paths that provide visual coverage for this feature. One path per line.
-
-### `scenes.md`
-
-A flat list of `.atelier/scenes/*.scene.tsx` paths that exercise this feature's user flow end-to-end. One path per line.
-
-Scenes are the canonical screen-level spec for user flows in this workspace. Where `flow.md` describes how the User, Frontend, and Backend exchange messages over time, `scenes.md` describes the discrete screens the user moves between and the mock buttons that drive those transitions. The two files are complementary, not redundant.
-
-Whenever this list changes, the `scene-coverage` skill (`.github/skills/scene-coverage/SKILL.md`) is invoked on the affected scenes so that derived qa cases under `qa/pending/` stay in sync.
-
----
-
-## When documentation is created or updated
-
-The agent creates or updates feature documentation when:
-
-- A **new feature** is built (new component folder under `components/`)
-- **Functional requirements change** — user flow is altered, new interactions are added, or existing ones are removed
-
-The agent does **not** touch feature documentation for:
-
-- Bugfixes that do not change observable behavior or user flow
-- Style / layout / refactor changes with no functional impact
-- Adding or adjusting Atelier frame states for behavior that already existed
+New or behaviorally changed scenes use the `scene-coverage` skill to derive QA cases. A contract's scene association documents the flow; neither that association nor a successful graph scan proves that its behavior has passed QA.

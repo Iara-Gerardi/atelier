@@ -77,7 +77,9 @@ Every description must answer:
 
 ## What qualifies as a distinct state?
 
-**Rule:** Read the component source top to bottom. Every conditional expression (`if`, ternary, `&&`) that changes what the user sees is a distinct state. Each one maps to exactly one state key — no fewer (don't collapse two visual outcomes into one state), no more (don't add states the component can never actually reach).
+**Rule:** A state is a reproducible, reachable visual or interactive configuration. Inspect render conditions (`if`, ternary, `&&`, attributes) as evidence, not as a one-to-one list of state keys. Several branches can contribute to one state, and independent branches can produce combinations that need separate states. Data can change the render without changing any branch.
+
+Run `npm run atelier:coverage -- --frame <name>` to attribute branch execution to frame/state/variant assignments. Add an explicit coverage plan with visible/text assertions to verify the intended output. An executed branch alone does not prove that the result was visible; an unobserved branch does not prove it is unreachable. See `docs/project-graph.md`.
 
 A state is any meaningfully different visual or interactive configuration of the component. **Enumerate all states upfront** — the goal is that every visual variant a real user could encounter is represented as a named state in the frame file.
 

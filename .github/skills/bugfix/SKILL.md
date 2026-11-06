@@ -25,7 +25,7 @@ Activate this skill whenever the user:
 3. **Immediately create** `qa/pending/<slug>.md` using the template below. This case captures the *fix-specific* regression — keep it narrow and focused on the broken behavior.
 4. **Refresh scene coverage for the affected area.** For each component file changed by the fix:
    - Find its frame name (from the `meta.name` in `.atelier/mocks/<ComponentName>.frame.tsx`).
-   - Search `features/*/scenes.md` for files that reference scenes containing that frame. Read each candidate `.atelier/scenes/*.scene.tsx` and confirm `nodes[*].frame` includes the frame name.
+   - Find scene references through the graph or scan `.atelier/scenes/*.scene.tsx` directly. Confirm the frame appears in `nodes[*].frame` or `outcomes[*].frame`; feature contracts may also list these paths in their `scenes` field.
    - For each matching scene, load and follow `.github/skills/scene-coverage/SKILL.md` to refresh `qa/pending/` cases for that scene. The skill is idempotent — existing cases will not be overwritten.
 5. **Tell the user** the fix is in place, that a fix-specific QA case was written to `qa/pending/<slug>.md`, and how many additional scene-coverage cases (if any) were emitted as a result of the refresh.
 

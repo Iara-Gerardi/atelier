@@ -1,0 +1,64 @@
+schemaVersion: 1
+component:
+  name: ExampleForm
+  source: components/ExampleForm.tsx
+validation:
+  enabled: true
+  model: jev-latest
+  threshold: 0.7
+states:
+  - id: idle
+    axis: status
+    value: idle
+    evidence:
+      - kind: react-state-union
+        line: 12
+        expression: "[status, setStatus] = useState<'idle' | 'submitting' | 'error' | 'success'>('idle')"
+    validityProbability: 0.82
+    valid: true
+  - id: submitting
+    axis: status
+    value: submitting
+    evidence:
+      - kind: react-state-union
+        line: 12
+        expression: "[status, setStatus] = useState<'idle' | 'submitting' | 'error' | 'success'>('idle')"
+      - kind: branch-comparison
+        line: 29
+        expression: status === 'submitting'
+    validityProbability: 0.81
+    valid: true
+  - id: error
+    axis: status
+    value: error
+    evidence:
+      - kind: react-state-union
+        line: 12
+        expression: "[status, setStatus] = useState<'idle' | 'submitting' | 'error' | 'success'>('idle')"
+    validityProbability: 0.92
+    valid: true
+  - id: success
+    axis: status
+    value: success
+    evidence:
+      - kind: react-state-union
+        line: 12
+        expression: "[status, setStatus] = useState<'idle' | 'submitting' | 'error' | 'success'>('idle')"
+      - kind: branch-comparison
+        line: 15
+        expression: status === 'success'
+    validityProbability: 0.97
+    valid: true
+  - id: loading
+    axis: isLoading
+    value: true
+    evidence:
+      - kind: boolean-render-guard
+        line: 66
+        expression: isLoading
+    validityProbability: 0.14
+    valid: false
+summary:
+  candidates: 5
+  valid: 4
+  rejected: 1

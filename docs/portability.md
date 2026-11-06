@@ -10,7 +10,7 @@ Atelier will ship as an **npm package**, built later. For the MVP we only record
 - The AI generators (`ai/tools/`) and the MCP server (`scripts/atelier-mcp/`).
 - The skills and agent templates (`.github/skills/`, `.github/agents/`).
 
-What stays project-local (created by an init step): the `.atelier/mocks/` frames, `.atelier/scenes/`, `.atelier/variants.ts`, and `features/`. The example app in this repo (`components/`, `actions/`, `hooks/`) is the **showcase**, not part of the package.
+What stays project-local (created by an init step): the `.atelier/mocks/` frames, `.atelier/scenes/`, `.atelier/states/` manifests, `.atelier/variants.ts`, and `features/`. Generated graphs and execution receipts live in ignored `.atelier/generated/` and `.atelier/coverage/` directories. The example app in this repo (`components/`, `actions/`, `hooks/`) is the **showcase**, not part of the package.
 
 ## Axis 1 — Any AI provider
 
@@ -24,7 +24,7 @@ npm run atelier:setup   # writes provider + model into .atelier/ai.config.json
 
 ## Axis 2 — Any host assistant
 
-Different assistants store agent/skill files in different folders. Atelier stays neutral because **all real capabilities live in the MCP server** (`list_stories`, `get_story_info`, `navigate_to_story`, `generate_frame`, `generate_scene`). The agent/skill files are thin instructions over those tools.
+Different assistants store agent/skill files in different folders. Atelier exposes shared implementations through CLI commands and MCP (`list_stories`, `get_story_info`, `navigate_to_story`, `generate_states`, `generate_frame`, `generate_scene`, `scan_project`, `trace_frame`, `capture_frame_coverage`). Initial catalog discovery uses `atelier:catalog`; ongoing changes use the same scanner from any host, with `atelier:watch` as an optional local trigger. The agent/skill files supply workflow instructions over these capabilities.
 
 | Assistant | Agents | Skills / rules | MCP config |
 |-----------|--------|----------------|------------|

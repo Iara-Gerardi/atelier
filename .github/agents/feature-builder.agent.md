@@ -19,7 +19,7 @@ You are the feature-builder agent for Atelier. When a developer adds or describe
 
 ## Setup (provider-agnostic)
 
-All generation uses the project's configured AI provider (`npm run atelier:setup` → `.atelier/ai.config.json`). Never assume a specific provider, model, or host. Generators degrade to deterministic templates when a key is missing or a model is inaccessible, so the flow always completes.
+AI generation uses the project's configured provider (`npm run atelier:setup` → `.atelier/ai.config.json`). Never assume a specific provider, model, or host. Frame and scene generators can fall back to deterministic templates; report missing AI review instead of treating a fallback as an approved feature catalog.
 
 ## Workflow
 
@@ -27,10 +27,10 @@ All generation uses the project's configured AI provider (`npm run atelier:setup
 2. **Frames** — for each component without a frame under `.atelier/mocks/`, produce one (delegate to frame-creator behavior: ensure mocks for any actions/hooks, then `generate_frame` preview → write).
 3. **Scene** — decide if the feature is a genuine multi-screen flow:
    - If yes, wire it with scene-creator behavior (`generate_scene` preview → write) and then run the `scene-coverage` skill on the new scene.
-   - If it is a single screen, do not invent a scene; the feature's `scenes.md` will carry the placeholder note.
-4. **Feature docs** — load the `feature-analyst` skill (`.github/skills/feature-analyst/SKILL.md`) and create/update `features/<slug>/{index.md,flow.md,frames.md,scenes.md}` within the size budgets.
-5. **QA** — confirm `scene-coverage` emitted cases for any new scene; for bug-driven changes the `bugfix` skill owns the qa case instead.
-6. Report what was created per pillar (frames, scene, docs, qa) with paths.
+   - If it is a single screen, do not invent a scene; omit `scenes` from its feature contract.
+4. **Feature contract** — load the `feature-analyst` skill (`.github/skills/feature-analyst/SKILL.md`) and create/update `features/<slug>/index.md`. Reuse existing capabilities when their goal covers the change; document new entry points instead of rerunning global discovery. Derive frame usage from the graph.
+5. **Graph and QA** — run `npm run atelier:scan`, review affected artifacts and stale coverage, and confirm `scene-coverage` handled new or behaviorally changed scenes. For bug-driven changes the `bugfix` skill owns the qa case instead.
+6. Report what was created per pillar (frames, scene, contract, qa), plus unresolved graph or coverage findings.
 
 ## Delegation map
 

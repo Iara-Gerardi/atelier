@@ -9,17 +9,14 @@ Docs exist so devs actually read them and agents spend few tokens. Hard size bud
 | File | Budget | Shape |
 |------|--------|-------|
 | `docs/*.md` | ≤ 60 lines | Orientation notes, tables over prose. |
-| `features/<slug>/index.md` | ≤ 40 lines | Front-matter + short sections. |
-| `features/<slug>/flow.md` | ≤ 30 lines | One Mermaid diagram + numbered legend. |
-| `features/<slug>/frames.md` | ≤ 15 lines | Path list only. |
-| `features/<slug>/scenes.md` | ≤ 15 lines | Path list only. |
+| `features/<slug>/index.md` | Usually ≤ 20 lines | Feature contract + optional brief scope paragraph. |
 
-Prefer bullets and tables. Never restate code in prose. If a file wants to grow past budget, split the feature instead of bloating the file.
+Prefer bullets and tables. Never restate code in prose. Feature boundaries follow distinct goals, not document length. Keep only intent and entry points in the catalog; derive frame usage and dependencies from the graph.
 
 ## Frames & scenes
 
 - Frames live in `.atelier/mocks/*.frame.tsx` (single canonical location).
-- A scene `outcome.frame` must differ from the node's own `frame` (outcomes are frame transitions). Intra-frame states use the StateBar — single-screen features get a `scenes.md` placeholder, not a scene.
+- A scene `outcome.frame` must differ from the node's own `frame` (outcomes are frame transitions). Intra-frame states use the StateBar; omit `scenes` from a single-screen feature contract when no scene is needed.
 - Primary actions / form submits use `@/components/ui/Button` so they join the scene outcome dropdown automatically.
 - Variants are only cross-cutting global axes (declared in `.atelier/variants.ts`). Page-local state is a frame `state`, never a variant.
 
@@ -37,7 +34,8 @@ Prefer bullets and tables. Never restate code in prose. If a file wants to grow 
 
 ## Workflow routing
 
-- New feature / changed flow → `feature-analyst` skill (then `scene-coverage` for any scenes).
+- New feature / changed flow → `feature-analyst` skill; maintain `features/<slug>/index.md` and run `npm run atelier:scan`. Use `scene-coverage` for new or behaviorally changed scenes.
+- Initial catalog discovery runs once via `npm run atelier:catalog`; subsequent features are documented incrementally. Review unresolved entries and stale coverage instead of relabeling unrelated features.
 - Bug fix → `bugfix` skill (writes a `qa/pending/` case).
 - Scene created/modified → `scene-coverage` skill.
 - Append `--no-workflow` to a request to skip automatic skill/doc steps.

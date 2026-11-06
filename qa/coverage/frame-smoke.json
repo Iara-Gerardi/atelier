@@ -1,0 +1,29 @@
+[
+  {
+    "frame": "ExampleForm",
+    "state": "idle",
+    "variants": { "auth": "guest" },
+    "steps": [
+      { "action": "assert-visible", "selector": "form" },
+      { "action": "fill", "selector": "input[type=email]", "value": "coverage@example.com" },
+      { "action": "click", "selector": "button[type=submit]" },
+      { "action": "assert-visible", "selector": "text=You're on the list!" }
+    ]
+  },
+  {
+    "frame": "ExampleForm",
+    "state": "error",
+    "variants": { "auth": "professor" },
+    "steps": [
+      { "action": "assert-visible", "selector": "text=That email is already registered. Try signing in instead." }
+    ]
+  },
+  {
+    "frame": "StatusCard",
+    "state": "success",
+    "steps": [
+      { "action": "assert-visible", "selector": "text=Student added" },
+      { "action": "assert-visible", "selector": "text=The record was created and is now visible to staff." }
+    ]
+  }
+]

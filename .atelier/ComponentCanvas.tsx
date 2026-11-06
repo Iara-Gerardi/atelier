@@ -25,7 +25,7 @@ export default function ComponentCanvas({ entry, activeState, variants }: Compon
           {description}
         </div>
       )}
-      <div key={renderKey} className="flex flex-1 items-center justify-center bg-white p-10">
+      <div key={renderKey} data-atelier-frame={entry.name} data-atelier-state={activeState in entry.states ? activeState : Object.keys(entry.states)[0]} className="flex flex-1 items-center justify-center bg-white p-10">
         {render({ variants: visibleVariants })}
       </div>
     </div>

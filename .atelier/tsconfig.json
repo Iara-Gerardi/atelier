@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -13,16 +17,33 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "baseUrl": "..",
-    "ignoreDeprecations": "6.0",
-    "types": ["vite/client"],
+    "ignoreDeprecations": "5.0",
+    "types": [
+      "vite/client",
+      "node"
+    ],
     "paths": {
-      "@/actions/user": ["./.atelier/mocks/actions/user.ts"],
-      "@/actions/product": ["./.atelier/mocks/actions/product.ts"],
-      "@/hooks/useRelatedBlocks": ["./.atelier/mocks/hooks/useRelatedBlocks.ts"],
-      "@/hooks/useArenaSearch": ["./.atelier/mocks/hooks/useArenaSearch.ts"],
-      "@/hooks/useRateLimit": ["./.atelier/mocks/hooks/useRateLimit.ts"],
-      "@/components/ui/Button": ["./.atelier/mocks/components/ui/Button.tsx"],
-      "@/*": ["./*"]
+      "@/actions/product": [
+        "./.atelier/mocks/actions/product.ts"
+      ],
+      "@/actions/user": [
+        "./.atelier/mocks/actions/user.ts"
+      ],
+      "@/components/ui/Button": [
+        "./.atelier/mocks/components/ui/Button.tsx"
+      ],
+      "@/hooks/useArenaSearch": [
+        "./.atelier/mocks/hooks/useArenaSearch.ts"
+      ],
+      "@/hooks/useRateLimit": [
+        "./.atelier/mocks/hooks/useRateLimit.ts"
+      ],
+      "@/hooks/useRelatedBlocks": [
+        "./.atelier/mocks/hooks/useRelatedBlocks.ts"
+      ],
+      "@/*": [
+        "./*"
+      ]
     }
   },
   "include": [

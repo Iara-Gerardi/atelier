@@ -87,7 +87,9 @@ When adding a frame that should react to a variant axis: (1) declare it in `meta
 
 ## Feature documentation
 
-When a new feature is built or an existing feature's functional requirements / user flow changes, **load the `feature-analyst` skill** (`.github/skills/feature-analyst/SKILL.md`) before writing any feature docs. The skill instructs you to create or update the four documentation files in `features/<slug>/` (`index.md`, `flow.md`, `frames.md`, `scenes.md`) and to invoke `scene-coverage` for any scenes listed in `scenes.md`.
+When a new feature is built or an existing feature's goal, entry points, or user flow changes, **load the `feature-analyst` skill** (`.github/skills/feature-analyst/SKILL.md`) before writing its contract. Maintain one `features/<slug>/index.md` with `slug`, `name`, `goal`, and `entries`; optional `exclude` and `scenes` express boundaries and authored flows. Frames and dependencies are derived from the directed graph, not listed manually. A frame can be used by several features.
+
+After functional changes, run `npm run atelier:scan` and review affected artifacts and coverage findings. Use `npm run atelier:scan -- --check` for a read-only drift/error check, or `npm run atelier:watch` for local updates. Initial AI catalog discovery (`npm run atelier:catalog`) runs once for an uninitialized app; subsequent changes update the existing catalog incrementally. Unclassified entries require a documented decision, not an arbitrary feature label. New or behaviorally changed scenes still invoke `scene-coverage`.
 
 **Do not load this skill for:** bugfixes that do not alter user-facing behavior, style or refactor changes, or adding Atelier frame states for behavior that already existed.
 
@@ -128,6 +130,7 @@ Three agents automate the four pillars for a newly prompted feature. They are th
 - [ ] States cover: loading, error, success, and any meaningful interaction variants
 - [ ] If the frame's behavior depends on a global variant axis (auth, locale, theme, …), declare `meta.variants: [...] as const` and consume them via `({ variants }) => …`
 - [ ] Primary actions and form submits use `@/components/ui/Button` (not inline `<button>`) so they participate in the scene's outcome dropdown automatically
-- [ ] If the component participates in a multi-screen user flow, a scene under `.atelier/scenes/` references its frame and the relevant `features/<slug>/scenes.md` lists that scene
+- [ ] If the component participates in a multi-screen user flow, a scene under `.atelier/scenes/` references its frame and the relevant feature contract lists it in `scenes`
 - [ ] If a scene node should be inaccessible under certain variant values, it declares a `gate` paired with a `fallback` node id
 - [ ] After any scene change, the `scene-coverage` skill has been run against the affected scene (cases live under `qa/pending/`)
+- [ ] After functional changes, `npm run atelier:scan` has been run and affected artifacts / coverage findings reviewed

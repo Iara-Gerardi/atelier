@@ -6,6 +6,7 @@ import type { Plugin } from 'vite'
 import type { RegistryEntry } from './.atelier/registry/types'
 import { buildAliases, resolveConfig, writeTsconfigPaths } from './.atelier/config'
 import userConfig from './atelier.config'
+import { renderCoveragePlugin } from './ai/tools/project-graph/coverage-plugin'
 
 const root = __dirname
 const atelier = resolveConfig(userConfig, root)
@@ -95,7 +96,7 @@ function registryApiPlugin(): Plugin {
 }
 
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), tsconfigSyncPlugin(), registryApiPlugin()],
+  plugins: [renderCoveragePlugin(root), react(), tsconfigSyncPlugin(), registryApiPlugin()],
   css: {
     postcss: {
       plugins: [tailwindcss],

@@ -4,6 +4,14 @@ import { chromium, type Browser, type Page } from 'playwright'
 import { z } from 'zod'
 import { generateFrameInputSchema, runGenerateFrame } from '../../ai/tools/generate-frame'
 import { generateSceneInputSchema, runGenerateScene } from '../../ai/tools/generate-scene'
+import {
+  generateStateManifestInputSchema,
+  runGenerateStateManifest,
+} from '../../ai/tools/generate-states'
+import { runProjectScan } from '../../ai/tools/project-graph/run'
+import { scanProject } from '../../ai/tools/project-graph/scan'
+import { coveragePlanSchema } from '../../ai/tools/project-graph/coverage'
+import { runFrameCoverage } from '../../ai/tools/project-graph/capture'
 
 const ATELIER_URL = process.env.ATELIER_URL ?? 'http://localhost:5173'
 const REGISTRY_URL = `${ATELIER_URL}/api/registry`
@@ -78,6 +86,39 @@ const server = new McpServer({
   name: 'atelier',
   version: '0.1.0',
 })
+
+server.tool(
+  'scan_project',
+  'Scan source symbols and Atelier contracts deterministically. Return changed files, affected frames/scenes/actions/mocks/variants and coverage drift. check=true is read-only; check=false refreshes generated graph and feature usages. Optional Jev review is cached by dependency fingerprint.',
+  { check: z.boolean().default(true), review: z.boolean().default(false), reviewModel: z.string().optional() },
+  async input => {
+    const result = await runProjectScan(input)
+    return { content: [{ type: 'text', text: JSON.stringify({ drift: result.drift, ...result.report }, null, 2) }] }
+  },
+)
+
+server.tool(
+  'trace_frame',
+  'Explain which declared features use a frame, with directed source paths and static provenance. Does not infer feature ownership or navigation from imports.',
+  { frame: z.string() },
+  async ({ frame }) => {
+    const graph = scanProject()
+    const entry = graph.frames.find(item => item.name === frame)
+    if (!entry) throw new Error(`Unknown frame ${frame}`)
+    return { content: [{ type: 'text', text: JSON.stringify({ frame: entry, usages: graph.usages.filter(use => use.frame === entry.id) }, null, 2) }] }
+  },
+)
+
+server.tool(
+  'capture_frame_coverage',
+  'Execute frame states in isolated browser contexts and record branch evidence plus explicit visible/text assertions. Requires an instrumented local preview (ATELIER_COVERAGE=1). Does not equate branch coverage with complete visual-state coverage.',
+  { plans: z.array(coveragePlanSchema).min(1) },
+  async ({ plans }) => {
+    const receipts = await runFrameCoverage({ url: ATELIER_URL, plans })
+    await runProjectScan()
+    return { content: [{ type: 'text', text: JSON.stringify(receipts, null, 2) }] }
+  },
+)
 
 // list_stories ---------------------------------------------------------------
 
@@ -230,6 +271,41 @@ server.tool(
       result.mode === 'preview'
         ? `${header}${result.frameSource}`
         : `${header}Frame file written successfully.`
+    return { content: [{ type: 'text', text }] }
+  }
+)
+
+// generate_states -----------------------------------------------------------
+
+server.tool(
+  'generate_states',
+  'Cheaply extract React component state candidates with the TypeScript AST, validate every candidate with Jev in one AI SDK request, and preview or write a YAML manifest under .atelier/states/.',
+  {
+    componentPath: generateStateManifestInputSchema.shape.componentPath,
+    componentName: generateStateManifestInputSchema.shape.componentName,
+    mode: generateStateManifestInputSchema.shape.mode,
+    outputPath: generateStateManifestInputSchema.shape.outputPath,
+    review: generateStateManifestInputSchema.shape.review,
+    threshold: generateStateManifestInputSchema.shape.threshold,
+    model: generateStateManifestInputSchema.shape.model,
+  },
+  async (input) => {
+    const result = await runGenerateStateManifest(input, {
+      rootDir: process.cwd(),
+      calledFrom: 'mcp',
+    })
+    const header = [
+      `Mode: ${result.mode}`,
+      `Output path: ${result.outputPath}`,
+      `Component path: ${result.componentPath}`,
+      `Candidates: ${result.manifest.summary.candidates}`,
+      `Valid: ${result.manifest.summary.valid ?? 'not reviewed'}`,
+      '',
+    ].join('\n')
+    const text =
+      result.mode === 'preview'
+        ? `${header}${result.yaml}`
+        : `${header}State manifest written successfully.`
     return { content: [{ type: 'text', text }] }
   }
 )
